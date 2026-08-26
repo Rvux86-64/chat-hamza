@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html lang="en">
 <head>
   
@@ -107,4 +107,87 @@
 </script>
 
 </body>
-</html>
+</html> -->
+<!-- REMOVE ALL UNPKG AND JSDELIVR SCRIPT TAGS FROM THE HEAD/BODY -->
+
+<script>
+    // 1. Your Supabase Credentials (keeping the exact URL format required for Direct API)
+    const SUPABASE_URL = "https://daeavzcrxrxckxosgihi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhZWF2emNyeHJ4Y2t4b3NnaWhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NTc3MzEsImV4cCI6MjEwMzMzMzczMX0.DhqsLnLseuS3lVG-KAYhQTAhxAwk4Cy0xFhKdyJycss";
+
+    const sendBtn = document.getElementById('send-btn');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    // Track a random session ID locally for message alignment
+    const mySessionId = Math.random().toString(36).substring(7);
+
+    // 2. Fetch Chat History using Browser Native Fetch API
+    async function loadMessages() {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/messages?order=created_at.asc`, {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            });
+            
+            const data = await response.json();
+            chatMessages.innerHTML = ''; // Clear chat area
+            
+            data.forEach(msg => {
+                appendMessageElement(msg.text, msg.id === mySessionId);
+            });
+        } catch (error) {
+            console.error("Network Fetch Error:", error);
+        }
+    }
+
+    // Helper to add chat bubble UI
+    function appendMessageElement(text, isMe) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        if (isMe) msgDiv.classList.add('my-message');
+        msgDiv.textContent = text;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 3. Post Message to Database using Browser Native Fetch API
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (text === '') return;
+
+        messageInput.value = '';
+
+        try {
+            // Send the request directly to the Rest endpoint route
+            await fetch(`${SUPABASE_URL}/rest/v1/messages`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify({ id: mySessionId, text: text })
+            });
+
+            // Locally display it right away since real-time library is blocked
+            appendMessageElement(text, true);
+        } catch (error) {
+            console.error("Error pushing message:", error);
+        }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // 4. Fallback Live-Polling (Checks database every 3 seconds for new chats)
+    loadMessages(); 
+    setInterval(loadMessages, 3000);
+</script>
+
