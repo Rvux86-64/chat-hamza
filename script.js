@@ -1,6 +1,6 @@
 // Initialize Supabase Client
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
+const SUPABASE_ANON_KEY = 'sb_publishable_PcWA7YDARf8vmEDl9kjPaA_KYq01DIJ';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatBox = document.getElementById('chatBox');
