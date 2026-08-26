@@ -1,8 +1,7 @@
-<!--<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   
-<script src="https://unpkg.com"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,86 +28,6 @@
     </div>
 </div>
   
-<script>
-    // 1. REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS
-    const SUPABASE_URL = "https://daeavzcrxrxckxosgihi.supabase.co/rest/v1/";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhZWF2emNyeHJ4Y2t4b3NnaWhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NTc3MzEsImV4cCI6MjEwMzMzMzczMX0.DhqsLnLseuS3lVG-KAYhQTAhxAwk4Cy0xFhKdyJycss";
-
-    // Initialize Supabase Client
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const sendBtn = document.getElementById('send-btn');
-    const messageInput = document.getElementById('message-input');
-    const chatMessages = document.getElementById('chat-messages');
-
-    // Generate a temporary unique session token to track who sent what
-    const mySessionId = Math.random().toString(36).substring(7);
-
-    // 2. Load Existing Chat History on Page Load
-    async function loadMessages() {
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .order('created_at', { ascending: true });
-
-        if (error) {
-            console.error("Error loading chat:", error);
-            return;
-        }
-
-        data.forEach(msg => appendMessageElement(msg.text, msg.id === mySessionId));
-    }
-
-    // Helper function to render a message item inside the DOM box
-    function appendMessageElement(text, isMe) {
-        const msgDiv = document.createElement('div');
-        msgDiv.classList.add('message');
-        if (isMe) msgDiv.classList.add('my-message');
-        msgDiv.textContent = text;
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
-    }
-
-    // 3. Insert Message to Database
-    async function sendMessage() {
-        const text = messageInput.value.trim();
-        if (text === '') return;
-
-        messageInput.value = '';
-
-        // We use the database ID field temporarily to pass the local session identifier
-        const { error } = await supabase
-            .from('messages')
-            .insert([{ id: mySessionId, text: text }]);
-
-        if (error) console.error("Error sending message:", error);
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-
-    // 4. Subscribe to Real-Time Updates
-    const channel = supabase
-        .channel('schema-db-changes')
-        .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'messages' },
-            (payload) => {
-                const isMe = payload.new.id === mySessionId;
-                appendMessageElement(payload.new.text, isMe);
-            }
-        )
-        .subscribe();
-
-    // Run layout initializer on load
-    loadMessages();
-</script>
-
-</body>
-</html> -->
-<!-- REMOVE ALL UNPKG AND JSDELIVR SCRIPT TAGS FROM THE HEAD/BODY -->
 
 <script>
     // 1. Your Supabase Credentials (keeping the exact URL format required for Direct API)
@@ -191,3 +110,6 @@
     setInterval(loadMessages, 3000);
 </script>
 
+
+</body>
+</html> 
