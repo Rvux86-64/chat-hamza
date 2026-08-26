@@ -1,16 +1,20 @@
-// Initialize Supabase Client
-const SUPABASE_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
-const SUPABASE_ANON_KEY = 'sb_publishable_PcWA7YDARf8vmEDl9kjPaA_KYq01DIJ';
-// Ensure 'supabase' is initialized correctly from the new script window object
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 1. Give your URL and Key unique names
+const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0";
+
+// 2. Initialize the client only ONCE using those unique names
+const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ... keep the rest of your chatBox, messageForm, and function code below unchanged ...
 const chatBox = document.getElementById('chatBox');
+
 const messageForm = document.getElementById('messageForm');
 const messageInput = document.getElementById('messageInput');
 const usernameInput = document.getElementById('username');
 
 // 1. Fetch Existing History on Load
 async function fetchMessages() {
-    const { data, error } = await supabase
+    const { data, error } = await supabase2
         .from('messages')
         .select('*')
         .order('created_at', { ascending: true });
@@ -46,7 +50,7 @@ messageForm.addEventListener('submit', async (e) => {
     if (!content) return;
 
     // Insert message into Supabase database
-    const { error } = await supabase
+    const { error } = await supabase2
         .from('messages')
         .insert([{ username, content }]);
 
@@ -55,7 +59,7 @@ messageForm.addEventListener('submit', async (e) => {
 });
 
 // 4. Listen to Realtime Insert Events
-supabase
+supabase2
     .channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         appendMessage(payload.new);
