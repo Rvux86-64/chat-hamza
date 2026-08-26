@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Real-Time Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #eef2f3; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        #chat-container { width: 420px; height: 80vh; background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f9f9f9; }
+        #chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid #eee; }
+        #message-input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        #send-btn { padding: 0 20px; background: #3ecf8e; color: white; border: none; border-radius: 20px; margin-left: 8px; cursor: pointer; font-weight: bold; }
+        #send-btn:hover { background: #34b27b; }
+        .message { padding: 8px 14px; border-radius: 12px; max-width: 75%; word-wrap: break-word; font-size: 14px; background: #e1f5fe; align-self: flex-start; }
+        .my-message { background: #3ecf8e; color: white; align-self: flex-end; }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div id="chat-messages"></div>
+    <div id="chat-input-area">
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button id="send-btn">Send</button>
+    </div>
+</div>
+
+<!-- Import Supabase Client JS from CDN -->
+<script src="https://jsdelivr.net"></script>
+
+<script>
+    // 1. REPLACE THESE WITH YOUR ACTUAL SUPABASE CREDENTIALS
+    const SUPABASE_URL = "https://daeavzcrxrxckxosgihi.supabase.co/rest/v1/";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhZWF2emNyeHJ4Y2t4b3NnaWhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NTc3MzEsImV4cCI6MjEwMzMzMzczMX0.DhqsLnLseuS3lVG-KAYhQTAhxAwk4Cy0xFhKdyJycss";
+
+    // Initialize Supabase Client
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const sendBtn = document.getElementById('send-btn');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    // Generate a temporary unique session token to track who sent what
+    const mySessionId = Math.random().toString(36).substring(7);
+
+    // 2. Load Existing Chat History on Page Load
+    async function loadMessages() {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error("Error loading chat:", error);
+            return;
+        }
+
+        data.forEach(msg => appendMessageElement(msg.text, msg.id === mySessionId));
+    }
+
+    // Helper function to render a message item inside the DOM box
+    function appendMessageElement(text, isMe) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        if (isMe) msgDiv.classList.add('my-message');
+        msgDiv.textContent = text;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+    }
+
+    // 3. Insert Message to Database
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (text === '') return;
+
+        messageInput.value = '';
+
+        // We use the database ID field temporarily to pass the local session identifier
+        const { error } = await supabase
+            .from('messages')
+            .insert([{ id: mySessionId, text: text }]);
+
+        if (error) console.error("Error sending message:", error);
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // 4. Subscribe to Real-Time Updates
+    const channel = supabase
+        .channel('schema-db-changes')
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages' },
+            (payload) => {
+                const isMe = payload.new.id === mySessionId;
+                appendMessageElement(payload.new.text, isMe);
+            }
+        )
+        .subscribe();
+
+    // Run layout initializer on load
+    loadMessages();
+</script>
+
+</body>
+</html>
