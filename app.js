@@ -1,7 +1,8 @@
 // Initialize Supabase Client
 const SUPABASE_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
 const SUPABASE_ANON_KEY = 'sb_publishable_PcWA7YDARf8vmEDl9kjPaA_KYq01DIJ';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Ensure 'supabase' is initialized correctly from the new script window object
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const chatBox = document.getElementById('chatBox');
 const messageForm = document.getElementById('messageForm');
