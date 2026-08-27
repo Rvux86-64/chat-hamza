@@ -3,29 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Chat App</title>
+    <title>Supabase Chat Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Include Supabase JS CDN Client -->
-    <!-- Alternative CDN link via ESM.sh -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.0/dist/umd/supabase.min.js"></script>
-
+    <!-- FontAwesome for Premium Modern Icons -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <!-- Include Supabase JS CDN Client Bundle -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h2>Supabase Realtime Chat</h2>
-            <input type="text" id="username" placeholder="Enter username..." value="Guest">
-        </div>
-        
-        <div class="chat-box" id="chatBox">
-            <!-- Messages will load here dynamically -->
+    <div class="chat-wrapper">
+        <!-- Sidebar Dashboard Info -->
+        <div class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-circle-nodes"></i>
+                <span>SupaChat v2</span>
+            </div>
+            <div class="user-card">
+                <label for="username"><i class="fa-solid fa-user-shield"></i> Current Profile</label>
+                <input type="text" id="username" placeholder="Username" value="Guest User">
+            </div>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span class="status-text">Connected to Supabase Realtime</span>
+            </div>
         </div>
 
-        <form class="chat-input-area" id="messageForm">
-            <input type="text" id="messageInput" placeholder="Type a message..." required autocomplete="off">
-            <button type="submit">Send</button>
-        </form>
+        <!-- Main Chat Window Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <div class="header-info">
+                    <h3># Global Feed</h3>
+                    <p>Real-time end-to-end database sync</p>
+                </div>
+            </div>
+            
+            <div class="chat-box" id="chatBox">
+                <!-- Messages dynamic injection stream -->
+            </div>
+
+            <form class="chat-input-container" id="messageForm">
+                <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off">
+                <button type="submit" id="sendBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
     </div>
 
     <script src="app.js?v=2"></script>
