@@ -20,7 +20,6 @@
           --msg-other: #1f2937;
         } 
 
-        /* --- LIGHT MODE VARIABLES --- */
         body.light-mode {
           --bg-main: #f0f2f5;
           --panel-bg: #ffffff;
@@ -30,12 +29,7 @@
           --msg-other: #ffffff;
         }
 
-        * { 
-          box-sizing: border-box; 
-          margin: 0; 
-          padding: 0; 
-          font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
         body { 
           display: flex; 
@@ -49,7 +43,6 @@
           transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Light Mode Specific Overrides */
         body.light-mode .sidebar, 
         body.light-mode .chat-input-container, 
         body.light-mode .chat-header { background: rgba(255, 255, 255, 0.95); }
@@ -63,8 +56,8 @@
         body.light-mode .channel-item:hover { background: rgba(0, 0, 0, 0.05); }
         body.light-mode .user-card { background: rgba(0, 0, 0, 0.03); }
         body.light-mode .message:not(.self) { border: 1px solid var(--border-color); }
+        body.light-mode .old-version-btn { border-color: var(--accent); color: var(--accent); }
 
-        /* --- Auth Modal Styles --- */
         .auth-modal {
           position: fixed;
           inset: 0;
@@ -88,11 +81,7 @@
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
-        .auth-box h2 {
-          color: var(--accent);
-          margin-bottom: 8px;
-          text-align: center;
-        }
+        .auth-box h2 { color: var(--accent); margin-bottom: 8px; text-align: center; }
 
         .auth-box input {
           width: 100%;
@@ -107,10 +96,7 @@
           transition: all 0.2s;
         }
         
-        .auth-box input:focus {
-          border-color: var(--accent); 
-          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2); 
-        }
+        .auth-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2); }
 
         .auth-box button {
           width: 100%;
@@ -125,23 +111,11 @@
           transition: filter 0.2s;
         }
 
-        .auth-box button:hover, .chat-input-container button:hover {
-          filter: brightness(0.85);
-        }
+        .auth-box button:hover, .chat-input-container button:hover { filter: brightness(0.85); }
 
-        .auth-toggle {
-          text-align: center;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: color 0.2s;
-        }
+        .auth-toggle { text-align: center; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; transition: color 0.2s; }
+        .auth-toggle:hover { color: var(--accent); }
 
-        .auth-toggle:hover {
-          color: var(--accent);
-        }
-
-        /* --- Main App Styles --- */
         .chat-wrapper { 
           display: flex; 
           width: 950px; 
@@ -164,36 +138,11 @@
           gap: 24px; 
         }
 
-        .brand { 
-          display: flex; 
-          align-items: center; 
-          gap: 12px; 
-          font-size: 1.3rem; 
-          font-weight: 700; 
-          color: var(--accent); 
-        }
+        .brand { display: flex; align-items: center; gap: 12px; font-size: 1.3rem; font-weight: 700; color: var(--accent); }
 
-        .channels-section {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          flex: 1;
-          overflow-y: auto;
-        }
-        
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .section-title {
-          font-size: 0.75rem; 
-          color: var(--text-muted); 
-          text-transform: uppercase; 
-          letter-spacing: 0.5px;
-          font-weight: 600;
-        }
+        .channels-section { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
 
         .icon-btn {
           background: transparent;
@@ -205,16 +154,9 @@
           transition: color 0.2s, background 0.2s;
         }
         
-        .icon-btn:hover {
-          color: var(--accent);
-          background: rgba(0,0,0,0.05);
-        }
+        .icon-btn:hover { color: var(--accent); background: rgba(0,0,0,0.05); }
 
-        .channels-list {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
+        .channels-list { display: flex; flex-direction: column; gap: 6px; }
 
         .channel-item {
           display: flex;
@@ -225,254 +167,96 @@
           color: var(--text-muted);
           font-size: 0.95rem;
           transition: all 0.2s ease;
+          line-height: 1.3;
         }
 
-        .channel-item:hover {
-          background: rgba(255, 255, 255, 0.03);
-          color: var(--text-main);
-        }
+        .channel-item:hover { background: rgba(255, 255, 255, 0.03); color: var(--text-main); }
+        .channel-item.active { background: rgba(0, 0, 0, 0.08); color: var(--accent); font-weight: 600; border-left: 3px solid var(--accent); }
 
-        .channel-item.active {
-          background: rgba(0, 0, 0, 0.08);
-          color: var(--accent);
-          font-weight: 600;
-          border-left: 3px solid var(--accent);
-        }
+        .user-card { display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .user-card label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .current-user-text { font-weight: bold; color: var(--text-main); font-size: 0.95rem; padding: 4px 0; display: flex; align-items: center; gap: 10px; }
+        .mini-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 
-        .user-card { 
-          display: flex; 
-          flex-direction: column; 
-          gap: 8px; 
-          background: rgba(255,255,255,0.02); 
-          padding: 14px; 
-          border-radius: 8px; 
-          border: 1px solid var(--border-color); 
-        }
-
-        .user-card label { 
-          font-size: 0.75rem; 
-          color: var(--text-muted); 
-          text-transform: uppercase; 
-          letter-spacing: 0.5px; 
-        }
-        
-        .current-user-text {
-          font-weight: bold;
-          color: var(--text-main);
-          font-size: 0.95rem;
-          padding: 4px 0;
-        }
-
-        .user-actions {
-          display: flex;
-          gap: 8px;
-          margin-top: 4px;
-        }
-
-        .settings-btn {
-          background: transparent;
-          border: 1px solid var(--border-color);
-          color: var(--text-main);
-          padding: 8px;
-          border-radius: 6px;
-          cursor: pointer;
-          flex: 1;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          transition: background 0.2s;
-        }
-        
+        .user-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .settings-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; cursor: pointer; flex: 1; display: flex; justify-content: center; align-items: center; transition: background 0.2s; }
         .settings-btn:hover { background: rgba(0,0,0,0.05); }
 
-        .color-picker-wrapper {
-          position: relative;
-          width: 32px;
-          height: 32px;
-          border-radius: 6px;
-          overflow: hidden;
-          border: 1px solid var(--border-color);
-        }
-        .color-picker-wrapper input[type="color"] {
+        .color-picker-wrapper { position: relative; width: 32px; height: 32px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
+        .color-picker-wrapper input[type="color"] { position: absolute; inset: -10px; width: 50px; height: 50px; cursor: pointer; border: none; }
+
+        .logout-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; flex: 1; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1); }
+
+        .old-version-btn { display: block; text-align: center; padding: 10px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; }
+        .old-version-btn:hover { background: var(--accent); color: white; }
+
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); }
+        .pulse-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); animation: pulse 1.6s infinite; }
+
+        .main-chat { flex: 1; display: flex; flex-direction: column; background: rgba(17, 24, 39, 0.4); }
+
+        .chat-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: rgba(17, 24, 39, 0.6); display: flex; justify-content: space-between; align-items: center; }
+        .header-info h3 { font-size: 1.1rem; font-weight: 600; }
+        .header-info p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .chat-header-actions { display: flex; gap: 8px; }
+
+        .chat-placeholder { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-muted); gap: 16px; text-align: center; padding: 40px; }
+        .chat-placeholder i { font-size: 3rem; color: var(--accent); opacity: 0.5; }
+
+        .chat-box { flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
+
+        .message-row { display: flex; gap: 12px; align-items: flex-end; max-width: 80%; animation: slideUp 0.25s ease-out forwards; position: relative; }
+        .message-row.self { align-self: flex-end; flex-direction: row-reverse; }
+
+        .chat-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid var(--border-color); }
+
+        .message { padding: 12px 16px; border-radius: 12px; min-width: 160px; background: var(--msg-other); color: var(--text-main); word-break: break-word; position: relative; }
+        .message-row.self .message { background: var(--msg-self); color: white; border-bottom-right-radius: 2px; }
+        .message-row:not(.self) .message { border-bottom-left-radius: 2px; }
+
+        .msg-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 12px; }
+        .msg-user { font-weight: 700; font-size: 0.75rem; color: var(--accent); }
+        .msg-time { font-size: 0.65rem; color: var(--text-muted); opacity: 0.8; white-space: nowrap; }
+        .message-row.self .msg-user, .message-row.self .msg-time { color: rgba(255,255,255,0.85); }
+
+        .msg-text { font-size: 0.95rem; line-height: 1.4; display: block; }
+
+        /* Message Edit/Delete Actions */
+        .msg-actions {
+          display: none;
           position: absolute;
-          inset: -10px;
-          width: 50px;
-          height: 50px;
-          cursor: pointer;
-          border: none;
-        }
-
-        .logout-btn {
-          background: transparent;
-          border: 1px solid #ef4444;
-          color: #ef4444;
-          padding: 8px;
+          top: -12px;
+          right: 10px;
+          background: var(--panel-bg);
+          border: 1px solid var(--border-color);
           border-radius: 6px;
-          cursor: pointer;
-          font-size: 0.8rem;
-          transition: all 0.2s;
-          flex: 1;
+          padding: 2px 6px;
+          gap: 6px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
+
+        .message-row.self:hover .msg-actions { display: flex; }
         
-        .logout-btn:hover {
-          background: rgba(239, 68, 68, 0.1);
-        }
-
-        .status-indicator { 
-          display: flex; 
-          align-items: center; 
-          gap: 8px; 
-          font-size: 0.8rem; 
-          color: var(--text-muted); 
-        }
-
-        .pulse-dot { 
-          width: 8px; 
-          height: 8px; 
-          background: var(--accent); 
-          border-radius: 50%; 
-          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); 
-          animation: pulse 1.6s infinite; 
-        }
-
-        .main-chat { 
-          flex: 1; 
-          display: flex; 
-          flex-direction: column; 
-          background: rgba(17, 24, 39, 0.4); 
-        }
-
-        .chat-header { 
-          padding: 20px 24px; 
-          border-bottom: 1px solid var(--border-color); 
-          background: rgba(17, 24, 39, 0.6); 
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .header-info h3 { 
-          font-size: 1.1rem; 
-          font-weight: 600; 
-        }
-
-        .header-info p { 
-          font-size: 0.8rem; 
-          color: var(--text-muted); 
-        }
-
-        .chat-header-actions {
-          display: flex;
-          gap: 8px;
-        }
-
-        .chat-box { 
-          flex: 1; 
-          padding: 24px; 
-          overflow-y: auto; 
-          display: flex; 
-          flex-direction: column; 
-          gap: 16px; 
-          scroll-behavior: smooth; 
-        }
-
-        .message { 
-          padding: 12px 16px; 
-          border-radius: 12px; 
-          max-width: 70%; 
-          min-width: 150px;
-          width: fit-content; 
-          background: var(--msg-other); 
-          color: var(--text-main); 
-          word-break: break-word; 
-          animation: slideUp 0.25s ease-out forwards; 
-        }
-
-        .message.self { 
-          background: var(--msg-self); 
-          color: white;
-          align-self: flex-end; 
-          border-bottom-right-radius: 2px; 
-        }
-
-        .message:not(.self) { 
-          border-bottom-left-radius: 2px; 
-        }
-        
-        .msg-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          margin-bottom: 6px;
-          gap: 12px;
-        }
-
-        .msg-user { 
-          font-weight: 700; 
-          font-size: 0.75rem; 
-          color: var(--accent); 
-        }
-
-        .msg-time {
-          font-size: 0.65rem;
+        .msg-action-btn {
+          background: none;
+          border: none;
           color: var(--text-muted);
-          opacity: 0.8;
-          white-space: nowrap;
+          cursor: pointer;
+          font-size: 0.75rem;
+          padding: 2px 4px;
         }
+        
+        .msg-action-btn:hover { color: var(--accent); }
+        .msg-action-btn.delete-btn:hover { color: #ef4444; }
 
-        .message.self .msg-user, .message.self .msg-time { 
-          color: rgba(255,255,255,0.85); 
-        }
+        .chat-input-container { display: flex; padding: 20px 24px; background: #0d1321; border-top: 1px solid var(--border-color); gap: 12px; }
+        .chat-input-container input { flex: 1; background: #1f2937; border: 1px solid var(--border-color); color: var(--text-main); padding: 14px 18px; border-radius: 8px; outline: none; font-size: 0.95rem; transition: all 0.2s; }
+        .chat-input-container input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
 
-        .msg-text { 
-          font-size: 0.95rem; 
-          line-height: 1.4; 
-          display: block;
-        }
-
-        .chat-input-container { 
-          display: flex; 
-          padding: 20px 24px; 
-          background: #0d1321; 
-          border-top: 1px solid var(--border-color); 
-          gap: 12px; 
-        }
-
-        .chat-input-container input { 
-          flex: 1; 
-          background: #1f2937; 
-          border: 1px solid var(--border-color); 
-          color: var(--text-main); 
-          padding: 14px 18px; 
-          border-radius: 8px; 
-          outline: none; 
-          font-size: 0.95rem; 
-          transition: all 0.2s; 
-        }
-
-        .chat-input-container input:focus { 
-          border-color: var(--accent); 
-          box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
-        }
-
-        .chat-input-container button { 
-          background: var(--accent); 
-          border: none; 
-          color: white; 
-          width: 48px; 
-          height: 48px; 
-          border-radius: 8px; 
-          cursor: pointer; 
-          display: flex; 
-          justify-content: center; 
-          align-items: center; 
-          font-size: 1.1rem; 
-          transition: filter 0.2s, transform 0.1s; 
-        }
-
-        .chat-input-container button:active { 
-          transform: scale(0.95); 
-        }
+        .chat-input-container button { background: var(--accent); border: none; color: white; width: 48px; height: 48px; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; transition: filter 0.2s, transform 0.1s; }
+        .chat-input-container button:active { transform: scale(0.95); }
 
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-track { background: transparent; }
@@ -529,16 +313,22 @@
             
             <div class="channels-section">
                 <div class="section-header">
-                    <label class="section-title"><i class="fa-solid fa-comments"></i> Group Chats</label>
+                    <label class="section-title"><i class="fa-solid fa-comments"></i> Your Chats</label>
                     <button id="createChatBtn" class="icon-btn" title="Create new chat"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div class="channels-list" id="channelsList">
-                    </div>
+                <div class="channels-list" id="channelsList"></div>
             </div>
+
+            <a href="./indexold.html" class="old-version-btn" title="Go to the classic layout">
+                <i class="fa-solid fa-clock-rotate-left"></i> Old Version
+            </a>
 
             <div class="user-card">
                 <label><i class="fa-solid fa-user-shield"></i> Current Profile</label>
-                <div id="currentUserDisplay" class="current-user-text">Loading...</div>
+                <div id="currentUserDisplay" class="current-user-text">
+                    <img src="" alt="User" class="mini-avatar" id="currentUserAvatar">
+                    <span id="currentUserName">Loading...</span>
+                </div>
                 
                 <div class="user-actions">
                     <button id="themeToggleBtn" class="settings-btn" title="Toggle Light/Dark Mode">
@@ -560,17 +350,25 @@
         <div class="main-chat">
             <div class="chat-header">
                 <div class="header-info">
-                    <h3 id="currentChannelName"># Select a chat</h3>
-                    <p>Real-time end-to-end database sync</p>
+                    <h3 id="currentChannelName">No Chat Selected</h3>
+                    <p id="currentChannelDesc">Select a chat to begin messaging</p>
                 </div>
-                <div class="chat-header-actions">
+                <div class="chat-header-actions" id="chatActions" style="display: none;">
+                    <button id="addUserBtn" class="icon-btn" title="Add User to Chat"><i class="fa-solid fa-user-plus"></i></button>
                     <button id="startVoiceCallBtn" class="icon-btn" title="Start Voice Call"><i class="fa-solid fa-phone"></i></button>
                     <button id="startVideoCallBtn" class="icon-btn" title="Start Video Call"><i class="fa-solid fa-video"></i></button>
                 </div>
             </div>
-            <div class="chat-box" id="chatBox">
-                </div>
-            <form class="chat-input-container" id="messageForm">
+            
+            <div class="chat-placeholder" id="chatPlaceholder">
+                <i class="fa-solid fa-comments"></i>
+                <h2>Welcome to SupaChat</h2>
+                <p>Select a chat from the sidebar or click the "+" icon to start a new conversation and invite friends.</p>
+            </div>
+
+            <div class="chat-box" id="chatBox" style="display: none;"></div>
+
+            <form class="chat-input-container" id="messageForm" style="display: none;">
                 <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off">
                 <button type="submit" id="sendBtn">
                     <i class="fa-solid fa-paper-plane"></i>
@@ -580,13 +378,11 @@
     </div>
     
     <script>
-        // 1. Core Supabase App API Credentials
         const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0";
 
         const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
 
-        // 2. DOM Node Element Maps
         const authModal = document.getElementById('authModal');
         const mainApp = document.getElementById('mainApp');
         const authForm = document.getElementById('authForm');
@@ -594,32 +390,46 @@
         const registerFields = document.getElementById('registerFields');
         const authTitle = document.getElementById('authTitle');
         const authBtn = document.getElementById('authBtn');
-        const currentUserDisplay = document.getElementById('currentUserDisplay');
+        
+        const currentUserName = document.getElementById('currentUserName');
+        const currentUserAvatar = document.getElementById('currentUserAvatar');
+        
         const logoutBtn = document.getElementById('logoutBtn');
         const createChatBtn = document.getElementById('createChatBtn');
+        const addUserBtn = document.getElementById('addUserBtn');
+        
+        const chatPlaceholder = document.getElementById('chatPlaceholder');
         const chatBox = document.getElementById('chatBox');
         const messageForm = document.getElementById('messageForm');
+        const chatActions = document.getElementById('chatActions');
+        
         const messageInput = document.getElementById('messageInput');
         const channelsList = document.getElementById('channelsList');
         const currentChannelName = document.getElementById('currentChannelName');
+        const currentChannelDesc = document.getElementById('currentChannelDesc');
 
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const accentColorPicker = document.getElementById('accentColorPicker');
         
-        // Media Call Elements
         const startVoiceCallBtn = document.getElementById('startVoiceCallBtn');
         const startVideoCallBtn = document.getElementById('startVideoCallBtn');
         const callOverlay = document.getElementById('callOverlay');
         const endCallBtn = document.getElementById('endCallBtn');
         const jitsiContainer = document.getElementById('jitsiContainer');
 
-        // 3. Application State
         let isLoginMode = false;
         let currentUser = null;
         let activeRoomId = null;
-        let jitsiAPI = null; // Holds the video call instance
+        let activeRoomRawName = "";
+        let jitsiAPI = null; 
 
-        // --- THEME & LOCAL STORAGE LOGIC ---
+        function getAvatarUrl(name, backgroundHex = '10b981', colorHex = 'ffffff') {
+            const cleanName = encodeURIComponent(name || 'User');
+            const bg = backgroundHex.replace('#', '');
+            const txt = colorHex.replace('#', '');
+            return `https://ui-avatars.com/api/?name=${cleanName}&background=${bg}&color=${txt}&bold=true&rounded=true`;
+        }
+
         function applySavedPreferences() {
             const savedTheme = localStorage.getItem('supachat_theme');
             const savedColor = localStorage.getItem('supachat_color');
@@ -635,6 +445,11 @@
             if (savedColor) {
                 document.documentElement.style.setProperty('--accent', savedColor);
                 accentColorPicker.value = savedColor;
+                
+                if (currentUser) {
+                    const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                    currentUserAvatar.src = getAvatarUrl(uname, savedColor);
+                }
             }
         }
 
@@ -649,18 +464,19 @@
             const newColor = e.target.value;
             document.documentElement.style.setProperty('--accent', newColor);
             localStorage.setItem('supachat_color', newColor);
+            
+            if (currentUser) {
+                const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                currentUserAvatar.src = getAvatarUrl(uname, newColor);
+            }
         });
 
-        // --- REAL JITSI CALL LOGIC ---
         function startCall(isVideo) {
             if (!activeRoomId) return alert("Please select a chat room first!");
             
-            // Clean up any old instances just in case
             if (jitsiAPI) jitsiAPI.dispose();
-            
             callOverlay.style.display = "flex";
             
-            // Create a unique room name using the chat name and ID so everyone in the channel joins the same call
             const safeRoomName = currentChannelName.textContent.replace(/[^a-zA-Z0-9]/g, '');
             const callRoomId = `SupaChat_${activeRoomId}_${safeRoomName}`;
 
@@ -670,17 +486,10 @@
                 width: '100%',
                 height: '100%',
                 parentNode: jitsiContainer,
-                userInfo: {
-                    displayName: currentUser.user_metadata?.username || 'Anonymous'
-                },
-                configOverwrite: {
-                    startWithVideoMuted: !isVideo,
-                    startWithAudioMuted: false,
-                    prejoinPageEnabled: false // skips the pre-join screen to jump right into the chat
-                }
+                userInfo: { displayName: currentUser.user_metadata?.username || 'Anonymous' },
+                configOverwrite: { startWithVideoMuted: !isVideo, startWithAudioMuted: false, prejoinPageEnabled: false }
             };
             
-            // Initialize the iframe connection
             jitsiAPI = new JitsiMeetExternalAPI(domain, options);
         }
 
@@ -688,17 +497,10 @@
         startVideoCallBtn.addEventListener('click', () => startCall(true));
 
         endCallBtn.addEventListener('click', () => {
-            if (jitsiAPI) {
-                jitsiAPI.dispose(); // Destroys the iframe securely
-                jitsiAPI = null;
-            }
+            if (jitsiAPI) { jitsiAPI.dispose(); jitsiAPI = null; }
             callOverlay.style.display = "none";
         });
-        
-        endCallBtn.addEventListener('mouseenter', (e) => e.target.style.filter = "brightness(0.8)");
-        endCallBtn.addEventListener('mouseleave', (e) => e.target.style.filter = "none");
 
-        // --- AUTHENTICATION LOGIC ---
         toggleAuthBtn.addEventListener('click', () => {
             isLoginMode = !isLoginMode;
             if (isLoginMode) {
@@ -716,57 +518,43 @@
 
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('password').value;
             const dummyEmail = `${username}@supachat.local`.toLowerCase();
 
             if (isLoginMode) {
-                const { data, error } = await supabase2.auth.signInWithPassword({ 
-                    email: dummyEmail, 
-                    password 
-                });
-                
+                const { error } = await supabase2.auth.signInWithPassword({ email: dummyEmail, password });
                 if (error) alert("Login failed: " + error.message);
                 else checkSession();
             } else {
                 const firstName = document.getElementById('firstName').value.trim();
                 const lastName = document.getElementById('lastName').value.trim();
 
-                if (!firstName || !lastName) {
-                    alert("First and Last name are required to sign up.");
-                    return;
-                }
+                if (!firstName || !lastName) return alert("First and Last name are required to sign up.");
 
-                const { data, error } = await supabase2.auth.signUp({
+                const { error } = await supabase2.auth.signUp({
                     email: dummyEmail,
                     password,
-                    options: {
-                        data: { 
-                            first_name: firstName, 
-                            last_name: lastName, 
-                            username: username 
-                        }
-                    }
+                    options: { data: { first_name: firstName, last_name: lastName, username: username } }
                 });
                 
                 if (error) alert("Signup error: " + error.message);
-                else {
-                    alert("Account created successfully! You are now logging in.");
-                    checkSession();
-                }
+                else { alert("Account created successfully!"); checkSession(); }
             }
         });
 
         async function checkSession() {
             const { data: { session } } = await supabase2.auth.getSession();
-            
             if (session) {
                 currentUser = session.user;
                 authModal.style.display = "none";
                 mainApp.style.display = "flex";
                 
-                currentUserDisplay.textContent = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                currentUserName.textContent = uname;
+                
+                const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+                currentUserAvatar.src = getAvatarUrl(uname, accent);
                 
                 fetchRooms(); 
             } else {
@@ -780,57 +568,93 @@
             currentUser = null;
             activeRoomId = null;
             chatBox.innerHTML = '';
+            
+            chatPlaceholder.style.display = 'flex';
+            chatBox.style.display = 'none';
+            messageForm.style.display = 'none';
+            chatActions.style.display = 'none';
+            currentChannelName.textContent = "No Chat Selected";
+            currentChannelDesc.textContent = "Select a chat to begin messaging";
+            
             checkSession();
         });
 
-        // --- CHAT APPLICATION LOGIC ---
-        createChatBtn.addEventListener('click', async () => {
-            const roomName = prompt("Enter new chat room name:");
-            if (!roomName) return;
+        // Add users to existing chat
+        addUserBtn.addEventListener('click', async () => {
+            if (!activeRoomId) return;
+            const newUsers = prompt("Enter usernames to add to this chat (comma-separated):");
+            if (!newUsers) return;
+
+            let updatedName = activeRoomRawName;
+            if (updatedName.includes(' — [')) {
+                const base = updatedName.split(' — [')[0];
+                const existing = updatedName.split(' — [')[1].replace(']', '');
+                updatedName = `${base} — [${existing}, ${newUsers}]`;
+            } else {
+                updatedName = `${updatedName} — [${newUsers}]`;
+            }
 
             const { error } = await supabase2
                 .from('rooms')
-                .insert([{ name: roomName }]);
+                .update({ name: updatedName })
+                .eq('id', activeRoomId);
+
+            if (error) alert("Error adding users: " + error.message);
+            else {
+                activeRoomRawName = updatedName;
+                currentChannelDesc.textContent = `Members: ${updatedName.split(' — ')[1]}`;
+                fetchRooms();
+            }
+        });
+
+        createChatBtn.addEventListener('click', async () => {
+            const roomName = prompt("Enter a name for this chat:");
+            if (!roomName) return;
             
+            const invitees = prompt("Enter usernames to invite (optional, comma-separated):");
+            const finalRoomName = invitees ? `${roomName} — [${invitees}]` : roomName;
+
+            const { error } = await supabase2.from('rooms').insert([{ name: finalRoomName }]);
             if (error) alert("Error creating room: " + error.message);
             else fetchRooms();
         });
 
         async function fetchRooms() {
-            const { data: rooms, error } = await supabase2
-                .from('rooms')
-                .select('*')
-                .order('name', { ascending: true });
-
-            if (error) {
-                console.error('Error loading chat groups:', error);
-                return;
-            }
+            const { data: rooms, error } = await supabase2.from('rooms').select('*').order('name', { ascending: true });
+            if (error) return console.error('Error loading chat groups:', error);
 
             channelsList.innerHTML = ''; 
-            
             if (rooms && rooms.length > 0) {
-                rooms.forEach((room, index) => {
+                rooms.forEach((room) => {
                     const roomEl = document.createElement('div');
                     roomEl.classList.add('channel-item');
                     roomEl.setAttribute('data-id', room.id);
-                    roomEl.innerHTML = `<i class="fa-solid fa-hashtag"></i> ${room.name}`;
+                    roomEl.innerHTML = `<i class="fa-solid fa-hashtag" style="margin-right: 8px;"></i> ${room.name.split(' — ')[0]}`;
                     
                     roomEl.addEventListener('click', () => switchRoom(room.id, room.name));
                     channelsList.appendChild(roomEl);
-
-                    if (index === 0 && !activeRoomId) {
-                        switchRoom(room.id, room.name);
-                    }
                 });
+                
+                if (activeRoomId) {
+                    document.querySelectorAll('.channel-item').forEach(el => {
+                        if (el.getAttribute('data-id') === activeRoomId) el.classList.add('active');
+                    });
+                }
             }
         }
 
         async function switchRoom(roomId, roomName) {
             if (activeRoomId === roomId) return;
             activeRoomId = roomId;
+            activeRoomRawName = roomName;
             
-            currentChannelName.textContent = `# ${roomName}`;
+            chatPlaceholder.style.display = 'none';
+            chatBox.style.display = 'flex';
+            messageForm.style.display = 'flex';
+            chatActions.style.display = 'flex';
+            
+            currentChannelName.textContent = `# ${roomName.split(' — ')[0]}`;
+            currentChannelDesc.textContent = roomName.includes(' — ') ? `Members: ${roomName.split(' — ')[1]}` : "Real-time end-to-end database sync";
             
             document.querySelectorAll('.channel-item').forEach(el => {
                 if (el.getAttribute('data-id') === roomId) el.classList.add('active');
@@ -857,26 +681,68 @@
         function appendMessage(msg) {
             if (!currentUser) return;
 
-            const isSelf = msg.username === currentUser.user_metadata?.username; 
+            const msgUsername = msg.username || 'Anonymous';
+            const isSelf = msgUsername === currentUser.user_metadata?.username; 
             
-            // Format the time from the database created_at field, fallback to current time for optimistic UI updates
             const timeString = msg.created_at 
                 ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
                 : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            const msgElement = document.createElement('div');
-            msgElement.classList.add('message');
-            if (isSelf) msgElement.classList.add('self');
+            const rowElement = document.createElement('div');
+            rowElement.classList.add('message-row');
+            rowElement.setAttribute('id', `msg-${msg.id}`);
+            if (isSelf) rowElement.classList.add('self');
 
-            msgElement.innerHTML = `
-                <div class="msg-header">
-                    <span class="msg-user">${isSelf ? 'You' : (msg.username || 'Anonymous')}</span>
-                    <span class="msg-time">${timeString}</span>
+            const avatarColor = isSelf ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : '374151';
+            const avatarImg = getAvatarUrl(msgUsername, avatarColor);
+
+            const actionsHtml = isSelf ? `
+                <div class="msg-actions">
+                    <button class="msg-action-btn" onclick="editMessage('${msg.id}', '${encodeURIComponent(msg.content)}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="msg-action-btn delete-btn" onclick="deleteMessage('${msg.id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
-                <span class="msg-text">${msg.content}</span>
+            ` : '';
+
+            rowElement.innerHTML = `
+                <img src="${avatarImg}" alt="${msgUsername}" class="chat-avatar">
+                <div class="message">
+                    ${actionsHtml}
+                    <div class="msg-header">
+                        <span class="msg-user">${isSelf ? 'You' : msgUsername}</span>
+                        <span class="msg-time">${timeString}</span>
+                    </div>
+                    <span class="msg-text" id="msg-text-${msg.id}">${msg.content}</span>
+                </div>
             `;
-            chatBox.appendChild(msgElement);
+            
+            chatBox.appendChild(rowElement);
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Edit Message Function
+        async function editMessage(msgId, encodedContent) {
+            const currentContent = decodeURIComponent(encodedContent);
+            const newContent = prompt("Edit your message:", currentContent);
+            if (!newContent || newContent === currentContent) return;
+
+            const { error } = await supabase2
+                .from('messages')
+                .update({ content: newContent })
+                .eq('id', msgId);
+
+            if (error) alert("Failed to edit message: " + error.message);
+        }
+
+        // Delete Message Function
+        async function deleteMessage(msgId) {
+            if (!confirm("Are you sure you want to delete this message?")) return;
+
+            const { error } = await supabase2
+                .from('messages')
+                .delete()
+                .eq('id', msgId);
+
+            if (error) alert("Failed to delete message: " + error.message);
         }
 
         messageForm.addEventListener('submit', async (e) => {
@@ -889,16 +755,13 @@
 
             const { error } = await supabase2
                 .from('messages')
-                .insert([{ 
-                    username: username, 
-                    content: content, 
-                    room_id: activeRoomId 
-                }]);
+                .insert([{ username: username, content: content, room_id: activeRoomId }]);
 
             if (error) console.error('Error sending message:', error);
             else messageInput.value = '';
         });
 
+        // Supabase Realtime Listener (Inserts, Updates, Deletes)
         supabase2
             .channel('public:messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
@@ -906,9 +769,16 @@
                     appendMessage(payload.new);
                 }
             })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, payload => {
+                const textElem = document.getElementById(`msg-text-${payload.new.id}`);
+                if (textElem) textElem.textContent = payload.new.content;
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, payload => {
+                const rowElem = document.getElementById(`msg-${payload.old.id}`);
+                if (rowElem) rowElem.remove();
+            })
             .subscribe();
 
-        // Boot Application
         applySavedPreferences();
         checkSession();
     </script>
