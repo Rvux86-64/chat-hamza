@@ -378,7 +378,7 @@
         </div>
     </div>
     
-    <script>
+  <!--  <script>
         function requestNotificationPermission() {
             if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
@@ -942,6 +942,546 @@ applySavedPreferences();
 checkSession();
 
     
-    </script>
+    </script>-->
+   <script>
+        // 1. Core Supabase App API Credentials
+    const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0"
+    const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
+
+    // 2. DOM Node Element Maps
+    const authModal = document.getElementById('authModal');
+    const mainApp = document.getElementById('mainApp');
+    const authForm = document.getElementById('authForm');
+    const toggleAuthBtn = document.getElementById('toggleAuth');
+    const registerFields = document.getElementById('registerFields');
+    const authTitle = document.getElementById('authTitle');
+    const authBtn = document.getElementById('authBtn');
+    
+    const currentUserName = document.getElementById('currentUserName');
+    const currentUserAvatar = document.getElementById('currentUserAvatar');
+    
+    const logoutBtn = document.getElementById('logoutBtn');
+    const createChatBtn = document.getElementById('createChatBtn');
+    const addUserBtn = document.getElementById('addUserBtn');
+    
+    const chatPlaceholder = document.getElementById('chatPlaceholder');
+    const chatBox = document.getElementById('chatBox');
+    const messageForm = document.getElementById('messageForm');
+    const chatActions = document.getElementById('chatActions');
+    
+    const messageInput = document.getElementById('messageInput');
+    const channelsList = document.getElementById('channelsList');
+    const currentChannelName = document.getElementById('currentChannelName');
+    const currentChannelDesc = document.getElementById('currentChannelDesc');
+
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const accentColorPicker = document.getElementById('accentColorPicker');
+    
+    const startVoiceCallBtn = document.getElementById('startVoiceCallBtn');
+    const startVideoCallBtn = document.getElementById('startVideoCallBtn');
+    const callOverlay = document.getElementById('callOverlay');
+    const endCallBtn = document.getElementById('endCallBtn');
+    const jitsiContainer = document.getElementById('jitsiContainer');
+
+    let isLoginMode = false;
+    let currentUser = null;
+    let activeRoomId = null;
+    let activeRoomRawName = "";
+    let jitsiAPI = null; 
+
+    function getAvatarUrl(name, backgroundHex = '10b981', colorHex = 'ffffff') {
+        const cleanName = encodeURIComponent(name || 'User');
+        const bg = backgroundHex.replace('#', '');
+        const txt = colorHex.replace('#', '');
+        return `https://ui-avatars.com/api/?name=${cleanName}&background=${bg}&color=${txt}&bold=true&rounded=true`;
+    }
+
+    function applySavedPreferences() {
+        const savedTheme = localStorage.getItem('supachat_theme');
+        const savedColor = localStorage.getItem('supachat_color');
+
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        } else {
+            document.body.classList.remove('light-mode');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        if (savedColor) {
+            document.documentElement.style.setProperty('--accent', savedColor);
+            accentColorPicker.value = savedColor;
+            
+            if (currentUser) {
+                const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                currentUserAvatar.src = getAvatarUrl(uname, savedColor);
+            }
+        }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        localStorage.setItem('supachat_theme', isLight ? 'light' : 'dark');
+    });
+
+    accentColorPicker.addEventListener('input', (e) => {
+        const newColor = e.target.value;
+        document.documentElement.style.setProperty('--accent', newColor);
+        localStorage.setItem('supachat_color', newColor);
+        
+        if (currentUser) {
+            const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+            currentUserAvatar.src = getAvatarUrl(uname, newColor);
+        }
+    });
+
+    function startCall(isVideo) {
+        if (!activeRoomId) return alert("Please select a chat room first!");
+        
+        if (jitsiAPI) jitsiAPI.dispose();
+        callOverlay.style.display = "flex";
+        
+        const safeRoomName = currentChannelName.textContent.replace(/[^a-zA-Z0-9]/g, '');
+        const callRoomId = `SupaChat_${activeRoomId}_${safeRoomName}`;
+
+        const domain = 'meet.jit.si';
+        const options = {
+            roomName: callRoomId,
+            width: '100%',
+            height: '100%',
+            parentNode: jitsiContainer,
+            userInfo: { displayName: currentUser.user_metadata?.username || 'Anonymous' },
+            configOverwrite: { startWithVideoMuted: !isVideo, startWithAudioMuted: false, prejoinPageEnabled: false }
+        };
+        
+        jitsiAPI = new JitsiMeetExternalAPI(domain, options);
+    }
+
+    startVoiceCallBtn.addEventListener('click', () => startCall(false));
+    startVideoCallBtn.addEventListener('click', () => startCall(true));
+
+    endCallBtn.addEventListener('click', () => {
+        if (jitsiAPI) { jitsiAPI.dispose(); jitsiAPI = null; }
+        callOverlay.style.display = "none";
+    });
+
+    toggleAuthBtn.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        if (isLoginMode) {
+            authTitle.textContent = "Log In";
+            authBtn.textContent = "Log In";
+            registerFields.style.display = "none";
+            toggleAuthBtn.textContent = "Need an account? Sign up.";
+        } else {
+            authTitle.textContent = "Create Account";
+            authBtn.textContent = "Sign Up";
+            registerFields.style.display = "block";
+            toggleAuthBtn.textContent = "Already have an account? Log in.";
+        }
+    });
+
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('password').value;
+        const dummyEmail = `${username}@supachat.com`.toLowerCase();
+
+        if (isLoginMode) {
+            const { error } = await supabase2.auth.signInWithPassword({ email: dummyEmail, password });
+            if (error) alert("Login failed: " + error.message);
+            else checkSession();
+        } else {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+
+            if (!firstName || !lastName) return alert("First and Last name are required to sign up.");
+
+            const { error } = await supabase2.auth.signUp({
+                email: dummyEmail,
+                password,
+                options: { data: { first_name: firstName, last_name: lastName, username: username } }
+            });
+            
+            if (error) alert("Signup error: " + error.message);
+            else { alert("Account created successfully!"); checkSession(); }
+        }
+    });
+
+    async function checkSession() {
+        const { data: { session } } = await supabase2.auth.getSession();
+        if (session) {
+            currentUser = session.user;
+            authModal.style.display = "none";
+            mainApp.style.display = "flex";
+            
+            const uname = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+            currentUserName.textContent = uname;
+            
+            const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+            currentUserAvatar.src = getAvatarUrl(uname, accent);
+            
+            fetchRooms(); 
+        } else {
+            authModal.style.display = "flex";
+            mainApp.style.display = "none";
+        }
+    }
+
+    logoutBtn.addEventListener('click', async () => {
+        await supabase2.auth.signOut();
+        currentUser = null;
+        activeRoomId = null;
+        chatBox.innerHTML = '';
+        
+        chatPlaceholder.style.display = 'flex';
+        chatBox.style.display = 'none';
+        messageForm.style.display = 'none';
+        chatActions.style.display = 'none';
+        currentChannelName.textContent = "No Chat Selected";
+        currentChannelDesc.textContent = "Select a chat to begin messaging";
+        
+        checkSession();
+    });
+
+    // Add users to existing chat
+    addUserBtn.addEventListener('click', async () => {
+        if (!activeRoomId) return;
+        const newUsers = prompt("Enter usernames to add to this chat (comma-separated):");
+        if (!newUsers) return;
+
+        let updatedName = activeRoomRawName;
+        if (updatedName.includes(' — [')) {
+            const base = updatedName.split(' — [')[0];
+            const existing = updatedName.split(' — [')[1].replace(']', '');
+            updatedName = `${base} — [${existing}, ${newUsers}]`;
+        } else {
+            updatedName = `${updatedName} — [${newUsers}]`;
+        }
+
+        const { error } = await supabase2
+            .from('rooms')
+            .update({ name: updatedName })
+            .eq('id', activeRoomId);
+
+        if (error) alert("Error adding users: " + error.message);
+        else {
+            activeRoomRawName = updatedName;
+            currentChannelDesc.textContent = `Members: ${updatedName.split(' — ')[1]}`;
+            fetchRooms();
+        }
+    });
+
+    createChatBtn.addEventListener('click', async () => {
+        const roomName = prompt("Enter a name for this chat:");
+        if (!roomName) return;
+        
+        const invitees = prompt("Enter usernames to invite (optional, comma-separated):");
+        const finalRoomName = invitees ? `${roomName} — [${invitees}]` : roomName;
+
+        const { error } = await supabase2.from('rooms').insert([{ name: finalRoomName }]);
+        if (error) alert("Error creating room: " + error.message);
+        else fetchRooms();
+    });
+
+    async function fetchRooms() {
+        const { data: rooms, error } = await supabase2.from('rooms').select('*').order('name', { ascending: true });
+        if (error) return console.error('Error loading chat groups:', error);
+
+        channelsList.innerHTML = ''; 
+        if (rooms && rooms.length > 0) {
+            rooms.forEach((room) => {
+                const roomEl = document.createElement('div');
+                roomEl.classList.add('channel-item');
+                roomEl.setAttribute('data-id', room.id);
+                roomEl.innerHTML = `<i class="fa-solid fa-hashtag" style="margin-right: 8px;"></i> ${room.name.split(' — ')[0]}`;
+                
+                roomEl.addEventListener('click', () => switchRoom(room.id, room.name));
+                channelsList.appendChild(roomEl);
+            });
+            
+            if (activeRoomId) {
+                document.querySelectorAll('.channel-item').forEach(el => {
+                    if (el.getAttribute('data-id') === activeRoomId) el.classList.add('active');
+                });
+            }
+        }
+    }
+
+    async function switchRoom(roomId, roomName) {
+        if (activeRoomId === roomId) return;
+        activeRoomId = roomId;
+        activeRoomRawName = roomName;
+        
+        chatPlaceholder.style.display = 'none';
+        chatBox.style.display = 'flex';
+        messageForm.style.display = 'flex';
+        chatActions.style.display = 'flex';
+        
+        currentChannelName.textContent = `# ${roomName.split(' — ')[0]}`;
+        currentChannelDesc.textContent = roomName.includes(' — ') ? `Members: ${roomName.split(' — ')[1]}` : "Real-time end-to-end database sync";
+        
+        document.querySelectorAll('.channel-item').forEach(el => {
+            if (el.getAttribute('data-id') === roomId) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+
+        chatBox.innerHTML = '';
+        await fetchMessages();
+    }
+
+    async function fetchMessages() {
+        if (!activeRoomId) return;
+
+        const { data, error } = await supabase2
+            .from('messages')
+            .select('*')
+            .eq('room_id', activeRoomId)
+            .order('created_at', { ascending: true });
+
+        if (error) console.error('Error loading history:', error);
+        else data.forEach(msg => appendMessage(msg));
+    }
+
+    function appendMessage(msg) {
+        if (!currentUser) return;
+
+        const msgUsername = msg.username || 'Anonymous';
+        const isSelf = msgUsername === currentUser.user_metadata?.username; 
+        
+        const timeString = msg.created_at 
+            ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        const rowElement = document.createElement('div');
+        rowElement.classList.add('message-row');
+        rowElement.setAttribute('id', `msg-${msg.id}`);
+        if (isSelf) rowElement.classList.add('self');
+
+        const avatarColor = isSelf ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : '374151';
+        const avatarImg = getAvatarUrl(msgUsername, avatarColor);
+
+        const actionsHtml = isSelf ? `
+            <div class="msg-actions">
+                <button class="msg-action-btn" onclick="editMessage('${msg.id}', '${encodeURIComponent(msg.content)}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="msg-action-btn delete-btn" onclick="deleteMessage('${msg.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        ` : '';
+
+        rowElement.innerHTML = `
+            <img src="${avatarImg}" alt="${msgUsername}" class="chat-avatar">
+            <div class="message">
+                ${actionsHtml}
+                <div class="msg-header">
+                    <span class="msg-user">${isSelf ? 'You' : msgUsername}</span>
+                    <span class="msg-time">${timeString}</span>
+                </div>
+                <span class="msg-text" id="msg-text-${msg.id}">${msg.content}</span>
+            </div>
+        `;
+        
+        chatBox.appendChild(rowElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Edit Message Function
+    async function editMessage(msgId, encodedContent) {
+        const currentContent = decodeURIComponent(encodedContent);
+        const newContent = prompt("Edit your message:", currentContent);
+        if (!newContent || newContent === currentContent) return;
+
+        const { error } = await supabase2
+            .from('messages')
+            .update({ content: newContent })
+            .eq('id', msgId);
+
+        if (error) alert("Failed to edit message: " + error.message);
+    }
+
+    // Delete Message Function
+    async function deleteMessage(msgId) {
+        if (!confirm("Are you sure you want to delete this message?")) return;
+
+        const { error } = await supabase2
+            .from('messages')
+            .delete()
+            .eq('id', msgId);
+
+        if (error) alert("Failed to delete message: " + error.message);
+    }
+messageForm.addEventListener('submit', async (e) => {
+e.preventDefault();
+const content = messageInput.value.trim();
+
+if (!content || !activeRoomId || !currentUser) return;
+
+const myUsername = currentUser.user_metadata?.username;
+
+// Fetch user role dynamically
+const { data: roleData } = await supabase2
+    .from('user_roles')
+    .select('role')
+    .eq('username', myUsername)
+    .single();
+
+const userRole = roleData?.role || 'user';
+const isSuperMod = userRole === 'supermod' || myUsername === 'hamzaperson2026';
+const isMod = isSuperMod || userRole === 'mod';
+
+async function handleCommand(inputString) {
+    const cleanInput = inputString.trim().replace(/^\//, '');
+    const parts = cleanInput.split(/\s+/);
+
+    const command = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    const target = args[0];
+
+    switch (command) {
+        case 'block':
+            if (!target) return alert("Usage: /block [username]");
+            const { error: blockErr } = await supabase2
+                .from('banned_users')
+                .upsert({ username: target }, { onConflict: 'username', ignoreDuplicates: true });
+            if (blockErr) alert("Error: " + blockErr.message);
+            else alert(`${target} has been blocked.`);
+            break;
+
+        case 'unblock':
+            if (!target) return alert("Usage: /unblock [username]");
+            const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
+            if (unblockErr) alert("Error: " + unblockErr.message);
+            else alert(`${target} has been unblocked.`);
+            break;
+
+        case 'lock':
+            const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
+            if (lockErr) alert("Error: " + lockErr.message);
+            else alert("Room locked.");
+            break;
+
+        case 'unlock':
+            const { error: unlockErr } = await supabase2.from('rooms').update({ is_locked: false }).eq('id', activeRoomId);
+            if (unlockErr) alert("Error: " + unlockErr.message);
+            else alert("Room unlocked.");
+            break;
+
+        case 'mod':
+            if (!isSuperMod) return alert("Only the Supermod can do this.");
+            if (!target) return alert("Usage: /mod [username]");
+            const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
+            if (modErr) alert("Error: " + modErr.message);
+            else alert(`${target} is now a mod.`);
+            break;
+
+        case 'unmod':
+            if (!isSuperMod) return alert("Only the Supermod can do this.");
+            if (!target) return alert("Usage: /unmod [username]");
+            const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
+            if (unmodErr) alert("Error: " + unmodErr.message);
+            else alert(`${target} has been removed from mods.`);
+            break;
+
+        case 'supermod':
+            if (!isSuperMod) return alert("Only the Supermod can do this.");
+            if (!target) return alert("Usage: /supermod [username]");
+            const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
+            if (smErr) alert("Error: " + smErr.message);
+            else alert(`${target} is now a Supermod in the database.`);
+            break;
+
+        case 'rename':
+            if (!isSuperMod) return alert("Only the Supermod can do this.");
+            
+            const oldName = args[0];
+            const newName = args[1];
+
+            if (!oldName || !newName) {
+                return alert("Usage: /rename [old_username] [new_username]");
+            }
+
+            const { error: renameErr } = await supabase2.rpc('rename_user', { 
+                old_name: oldName, 
+                new_name: newName 
+            });
+
+            if (renameErr) alert("Error: " + renameErr.message);
+            else alert(`Successfully renamed ${oldName} to ${newName}.`);
+            break;
+
+        default:
+            alert(`Unknown command: /${command}`);
+    }
+}
+
+// Check if input is a slash command
+if (content.startsWith('/')) {
+    messageInput.value = '';
+    await handleCommand(content);
+    return;
+}
+
+// Normal message sending
+messageInput.value = '';
+
+const { error } = await supabase2
+    .from('messages')
+    .insert([{ 
+        room_id: activeRoomId, 
+        content: content,
+        username: myUsername
+    }]);
+
+if (error) {
+    console.error('Error sending message:', error);
+    alert(error.message.includes('Secure message sending') 
+        ? "Cannot send message. You may be blocked, or the room is locked." 
+        : "Failed to send message.");
+}
+});
+
+// Setup Realtime with full INSERT, UPDATE, and DELETE support
+if (window.msgChannel) {
+supabase2.removeChannel(window.msgChannel);
+}
+
+window.msgChannel = supabase2
+.channel('messages-live-test')
+.on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'messages' },
+    (payload) => {
+        if (!activeRoomId || payload.new.room_id == activeRoomId) {
+            if (!document.getElementById(`msg-${payload.new.id}`)) {
+                appendMessage(payload.new);
+            }
+        }
+    }
+)
+.on(
+    'postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'messages' },
+    (payload) => {
+        const textElem = document.getElementById(`msg-text-${payload.new.id}`);
+        if (textElem) textElem.textContent = payload.new.content;
+    }
+)
+.on(
+    'postgres_changes',
+    { event: 'DELETE', schema: 'public', table: 'messages' },
+    (payload) => {
+        const rowElem = document.getElementById(`msg-${payload.old.id}`);
+        if (rowElem) rowElem.remove();
+    }
+)
+.subscribe((status, err) => {
+    console.log("Supabase Realtime Status:", status);
+    if (err) console.error("Realtime Subscription Error:", err);
+});
+
+applySavedPreferences();
+checkSession();
+</script>
 </body>
 </html>
