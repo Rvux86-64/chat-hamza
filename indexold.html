@@ -19,8 +19,33 @@
           --msg-self: var(--accent);
           --msg-other: #1f2937;
         } 
-        .new-version-btn { display: block; text-align: center; padding: 10px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease; }
-        .new-version-btn:hover { background: var(--accent); color: white; }
+        .new-version-btn {
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              z-index: 9999;
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+              padding: 10px 16px;
+              background: var(--panel-bg);
+              border: 1px solid var(--accent);
+              color: var(--accent);
+              text-decoration: none;
+              border-radius: 8px;
+              font-size: 0.85rem;
+              font-weight: 600;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              backdrop-filter: blur(8px);
+              transition: all 0.2s ease;
+    }
+
+    .new-version-btn:hover{
+      background: var(--accent);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+    }
 
 
         /* --- LIGHT MODE VARIABLES --- */
