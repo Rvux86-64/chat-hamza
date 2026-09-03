@@ -864,7 +864,7 @@ messageForm.addEventListener('submit', async (e) => {
     }
 });
         // Supabase Realtime Listener (Inserts, Updates, Deletes)
-        supabase2
+       /* supabase2
             .channel('public:messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
                 if (payload.new.room_id === activeRoomId) {
@@ -880,9 +880,51 @@ messageForm.addEventListener('submit', async (e) => {
                 if (rowElem) rowElem.remove();
             })
             .subscribe();
-
         applySavedPreferences();
-        checkSession();
+        checkSession();*/
+        // 1. Clean up old subscription if room changed
+if (window.messageChannel) {
+    supabase2.removeChannel(window.messageChannel);
+}
+
+// 2. Subscribe with room-level filtering directly at the database level
+window.messageChannel = supabase2
+    .channel(`room:${activeRoomId}`)
+    .on(
+        'postgres_changes', 
+        { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'messages',
+            filter: `room_id=eq.${activeRoomId}` // Only receive messages for active room
+        }, 
+        payload => {
+            // Prevent duplicates if already appended locally
+            if (!document.getElementById(`msg-${payload.new.id}`)) {
+                appendMessage(payload.new);
+            }
+        }
+    )
+    .on(
+        'postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'messages' }, 
+        payload => {
+            const textElem = document.getElementById(`msg-text-${payload.new.id}`);
+            if (textElem) textElem.textContent = payload.new.content;
+        }
+    )
+    .on(
+        'postgres_changes', 
+        { event: 'DELETE', schema: 'public', table: 'messages' }, 
+        payload => {
+            const rowElem = document.getElementById(`msg-${payload.old.id}`);
+            if (rowElem) rowElem.remove();
+        }
+    )
+    .subscribe();
+
+applySavedPreferences();
+checkSession();
     </script>
 </body>
 </html>
