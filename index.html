@@ -793,6 +793,21 @@ messageForm.addEventListener('submit', async (e) => {
     if (blockErr) alert("Error: " + blockErr.message);
     else alert(`${target} has been blocked.`);
     break;
+                   case 'rename':
+    if (!isSuperMod) return alert("Only the Supermod can do this.");
+    
+    // Splits input into old and new usernames (e.g. /rename OldName NewName)
+    const [oldName, newName] = target ? target.trim().split(/\s+/) : [];
+    if (!oldName || !newName) return alert("Usage: /rename [old_username] [new_username]");
+
+    const { error: renameErr } = await supabase2.rpc('rename_user', { 
+        old_name: oldName, 
+        new_name: newName 
+    });
+
+    if (renameErr) alert("Error: " + renameErr.message);
+    else alert(`Successfully renamed ${oldName} to ${newName}.`);
+    break;
     case 'unblock':
         if (!target) return alert("Usage: /unblock [username]");
         const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
