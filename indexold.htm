@@ -4,23 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supabase Chat Dashboard</title>
-    <!-- FontAwesome Premium Modern Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Include Supabase JS CDN Client Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
     
     <style>
         :root {
           --bg-main: #0b0f19;
           --panel-bg: #111827;
           --accent: #10b981;
-          --accent-hover: #059669;
           --border-color: #1f2937;
           --text-main: #f3f4f6;
           --text-muted: #9ca3af;
-          --msg-self: #047857;
+          --msg-self: var(--accent);
           --msg-other: #1f2937;
         } 
+
+        /* --- LIGHT MODE VARIABLES --- */
+        body.light-mode {
+          --bg-main: #f0f2f5;
+          --panel-bg: #ffffff;
+          --border-color: #d1d5db;
+          --text-main: #111827;
+          --text-muted: #6b7280;
+          --msg-other: #ffffff;
+        }
 
         * { 
           box-sizing: border-box; 
@@ -37,9 +45,103 @@
           background-color: var(--bg-main); 
           background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%); 
           color: var(--text-main); 
-          overflow: hidden; 
+          overflow: hidden;
+          transition: background-color 0.3s, color 0.3s;
         }
 
+        /* Light Mode Specific Overrides */
+        body.light-mode .sidebar, 
+        body.light-mode .chat-input-container, 
+        body.light-mode .chat-header { background: rgba(255, 255, 255, 0.95); }
+        
+        body.light-mode .chat-wrapper, 
+        body.light-mode .main-chat { background: rgba(243, 244, 246, 0.9); }
+        
+        body.light-mode .auth-box input, 
+        body.light-mode .chat-input-container input { background: #f9fafb; color: #111827; border-color: #d1d5db; }
+        
+        body.light-mode .channel-item:hover { background: rgba(0, 0, 0, 0.05); }
+        body.light-mode .user-card { background: rgba(0, 0, 0, 0.03); }
+        body.light-mode .message:not(.self) { border: 1px solid var(--border-color); }
+
+        /* --- Auth Modal Styles --- */
+        .auth-modal {
+          position: fixed;
+          inset: 0;
+          background: rgba(11, 15, 25, 0.95);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .auth-box {
+          background: var(--panel-bg);
+          padding: 32px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          width: 100%;
+          max-width: 400px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-box h2 {
+          color: var(--accent);
+          margin-bottom: 8px;
+          text-align: center;
+        }
+
+        .auth-box input {
+          width: 100%;
+          background: #1f2937;
+          border: 1px solid var(--border-color);
+          color: var(--text-main);
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          outline: none;
+          font-size: 0.95rem;
+          transition: all 0.2s;
+        }
+        
+        .auth-box input:focus {
+          border-color: var(--accent); 
+          box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2); 
+        }
+
+        .auth-box button {
+          width: 100%;
+          padding: 14px;
+          background: var(--accent);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 1rem;
+          transition: filter 0.2s;
+        }
+
+        .auth-box button:hover, .chat-input-container button:hover {
+          filter: brightness(0.85);
+        }
+
+        .auth-toggle {
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+
+        .auth-toggle:hover {
+          color: var(--accent);
+        }
+
+        /* --- Main App Styles --- */
         .chat-wrapper { 
           display: flex; 
           width: 950px; 
@@ -71,13 +173,18 @@
           color: var(--accent); 
         }
 
-        /* New Interactive Channels UI Classes */
         .channels-section {
           display: flex;
           flex-direction: column;
           gap: 10px;
           flex: 1;
           overflow-y: auto;
+        }
+        
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .section-title {
@@ -86,6 +193,21 @@
           text-transform: uppercase; 
           letter-spacing: 0.5px;
           font-weight: 600;
+        }
+
+        .icon-btn {
+          background: transparent;
+          color: var(--text-muted);
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 6px;
+          transition: color 0.2s, background 0.2s;
+        }
+        
+        .icon-btn:hover {
+          color: var(--accent);
+          background: rgba(0,0,0,0.05);
         }
 
         .channels-list {
@@ -111,9 +233,10 @@
         }
 
         .channel-item.active {
-          background: rgba(16, 185, 129, 0.1);
+          background: rgba(0, 0, 0, 0.08);
           color: var(--accent);
           font-weight: 600;
+          border-left: 3px solid var(--accent);
         }
 
         .user-card { 
@@ -132,25 +255,70 @@
           text-transform: uppercase; 
           letter-spacing: 0.5px; 
         }
-
-        .user-card input { 
-          background: #1f2937; 
-          border: 1px solid #374151; 
-          color: var(--text-main); 
-          padding: 8px 12px; 
-          border-radius: 6px; 
-          outline: none; 
-          font-size: 0.95rem; 
-          transition: all 0.2s; 
+        
+        .current-user-text {
+          font-weight: bold;
+          color: var(--text-main);
+          font-size: 0.95rem;
+          padding: 4px 0;
         }
 
-        .user-card input:focus { 
-          border-color: var(--accent); 
-          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); 
+        .user-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .settings-btn {
+          background: transparent;
+          border: 1px solid var(--border-color);
+          color: var(--text-main);
+          padding: 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: background 0.2s;
+        }
+        
+        .settings-btn:hover { background: rgba(0,0,0,0.05); }
+
+        .color-picker-wrapper {
+          position: relative;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          overflow: hidden;
+          border: 1px solid var(--border-color);
+        }
+        .color-picker-wrapper input[type="color"] {
+          position: absolute;
+          inset: -10px;
+          width: 50px;
+          height: 50px;
+          cursor: pointer;
+          border: none;
+        }
+
+        .logout-btn {
+          background: transparent;
+          border: 1px solid #ef4444;
+          color: #ef4444;
+          padding: 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.8rem;
+          transition: all 0.2s;
+          flex: 1;
+        }
+        
+        .logout-btn:hover {
+          background: rgba(239, 68, 68, 0.1);
         }
 
         .status-indicator { 
-          margin-top: auto; 
           display: flex; 
           align-items: center; 
           gap: 8px; 
@@ -178,6 +346,9 @@
           padding: 20px 24px; 
           border-bottom: 1px solid var(--border-color); 
           background: rgba(17, 24, 39, 0.6); 
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .header-info h3 { 
@@ -188,6 +359,11 @@
         .header-info p { 
           font-size: 0.8rem; 
           color: var(--text-muted); 
+        }
+
+        .chat-header-actions {
+          display: flex;
+          gap: 8px;
         }
 
         .chat-box { 
@@ -204,9 +380,9 @@
           padding: 12px 16px; 
           border-radius: 12px; 
           max-width: 70%; 
+          min-width: 150px;
           width: fit-content; 
           background: var(--msg-other); 
-          border: 1px solid rgba(255, 255, 255, 0.03); 
           color: var(--text-main); 
           word-break: break-word; 
           animation: slideUp 0.25s ease-out forwards; 
@@ -214,6 +390,7 @@
 
         .message.self { 
           background: var(--msg-self); 
+          color: white;
           align-self: flex-end; 
           border-bottom-right-radius: 2px; 
         }
@@ -221,22 +398,36 @@
         .message:not(.self) { 
           border-bottom-left-radius: 2px; 
         }
+        
+        .msg-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 6px;
+          gap: 12px;
+        }
 
         .msg-user { 
           font-weight: 700; 
           font-size: 0.75rem; 
           color: var(--accent); 
-          display: block; 
-          margin-bottom: 4px; 
         }
 
-        .message.self .msg-user { 
-          color: #a7f3d0; 
+        .msg-time {
+          font-size: 0.65rem;
+          color: var(--text-muted);
+          opacity: 0.8;
+          white-space: nowrap;
+        }
+
+        .message.self .msg-user, .message.self .msg-time { 
+          color: rgba(255,255,255,0.85); 
         }
 
         .msg-text { 
           font-size: 0.95rem; 
           line-height: 1.4; 
+          display: block;
         }
 
         .chat-input-container { 
@@ -250,7 +441,7 @@
         .chat-input-container input { 
           flex: 1; 
           background: #1f2937; 
-          border: 1px solid #374151; 
+          border: 1px solid var(--border-color); 
           color: var(--text-main); 
           padding: 14px 18px; 
           border-radius: 8px; 
@@ -261,7 +452,7 @@
 
         .chat-input-container input:focus { 
           border-color: var(--accent); 
-          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+          box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
         }
 
         .chat-input-container button { 
@@ -276,11 +467,7 @@
           justify-content: center; 
           align-items: center; 
           font-size: 1.1rem; 
-          transition: background 0.2s, transform 0.1s; 
-        }
-
-        .chat-input-container button:hover { 
-          background: var(--accent-hover); 
+          transition: filter 0.2s, transform 0.1s; 
         }
 
         .chat-input-container button:active { 
@@ -309,43 +496,80 @@
     </style>
 </head>
 <body>
-    <div class="chat-wrapper">
-        <!-- Sidebar Dashboard Info -->
+
+    <div id="authModal" class="auth-modal">
+        <div class="auth-box">
+            <h2 id="authTitle">Create Account</h2>
+            <form id="authForm">
+                <div id="registerFields">
+                    <input type="text" id="firstName" placeholder="First Name">
+                    <input type="text" id="lastName" placeholder="Last Name">
+                </div>
+                <input type="text" id="authUsername" placeholder="Username" required autocomplete="off">
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="authBtn">Sign Up</button>
+            </form>
+            <p class="auth-toggle" id="toggleAuth">Already have an account? Log in.</p>
+        </div>
+    </div>
+
+    <div id="callOverlay" class="auth-modal" style="display: none; z-index: 2000; flex-direction: column;">
+        <div id="jitsiContainer" style="width: 85%; height: 85%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);"></div>
+        <button id="endCallBtn" style="background: #ef4444; padding: 12px 24px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: filter 0.2s;">
+            <i class="fa-solid fa-phone-slash"></i> Close Call Window
+        </button>
+    </div>
+
+    <div class="chat-wrapper" id="mainApp" style="display: none;">
         <div class="sidebar">
             <div class="brand">
                 <i class="fa-solid fa-circle-nodes"></i>
                 <span>SupaChat v2</span>
             </div>
             
-            <!-- Dynamic Channels Navigation -->
             <div class="channels-section">
-                <label class="section-title"><i class="fa-solid fa-comments"></i> Group Chats</label>
-                <div class="channels-list" id="channelsList">
-                    <!-- Dynamic channels injection stream -->
+                <div class="section-header">
+                    <label class="section-title"><i class="fa-solid fa-comments"></i> Group Chats</label>
+                    <button id="createChatBtn" class="icon-btn" title="Create new chat"><i class="fa-solid fa-plus"></i></button>
                 </div>
+                <div class="channels-list" id="channelsList">
+                    </div>
             </div>
 
             <div class="user-card">
-                <label for="username"><i class="fa-solid fa-user-shield"></i> Current Profile</label>
-                <input type="text" id="username" placeholder="Username" value="Guest User">
+                <label><i class="fa-solid fa-user-shield"></i> Current Profile</label>
+                <div id="currentUserDisplay" class="current-user-text">Loading...</div>
+                
+                <div class="user-actions">
+                    <button id="themeToggleBtn" class="settings-btn" title="Toggle Light/Dark Mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="color-picker-wrapper" title="Pick Accent Color">
+                        <input type="color" id="accentColorPicker" value="#10b981">
+                    </div>
+                    <button id="logoutBtn" class="logout-btn" title="Log Out"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
             </div>
+            
             <div class="status-indicator">
                 <span class="pulse-dot"></span>
-                <span class="status-text">Connected to Supabase Realtime</span>
+                <span class="status-text">Connected Realtime</span>
             </div>
         </div>
 
-        <!-- Main Chat Window Area -->
         <div class="main-chat">
             <div class="chat-header">
                 <div class="header-info">
-                    <h3 id="currentChannelName"># Loading...</h3>
+                    <h3 id="currentChannelName"># Select a chat</h3>
                     <p>Real-time end-to-end database sync</p>
+                </div>
+                <div class="chat-header-actions">
+                    <button id="startVoiceCallBtn" class="icon-btn" title="Start Voice Call"><i class="fa-solid fa-phone"></i></button>
+                    <button id="startVideoCallBtn" class="icon-btn" title="Start Video Call"><i class="fa-solid fa-video"></i></button>
                 </div>
             </div>
             <div class="chat-box" id="chatBox">
-                <!-- Messages dynamic injection stream -->
-            </div>
+                </div>
             <form class="chat-input-container" id="messageForm">
                 <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off">
                 <button type="submit" id="sendBtn">
@@ -356,24 +580,222 @@
     </div>
     
     <script>
-        // 1. Core Supabase App API Credentials Verification 
+        // 1. Core Supabase App API Credentials
         const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0";
 
         const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
 
         // 2. DOM Node Element Maps
+        const authModal = document.getElementById('authModal');
+        const mainApp = document.getElementById('mainApp');
+        const authForm = document.getElementById('authForm');
+        const toggleAuthBtn = document.getElementById('toggleAuth');
+        const registerFields = document.getElementById('registerFields');
+        const authTitle = document.getElementById('authTitle');
+        const authBtn = document.getElementById('authBtn');
+        const currentUserDisplay = document.getElementById('currentUserDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const createChatBtn = document.getElementById('createChatBtn');
         const chatBox = document.getElementById('chatBox');
         const messageForm = document.getElementById('messageForm');
         const messageInput = document.getElementById('messageInput');
-        const usernameInput = document.getElementById('username');
         const channelsList = document.getElementById('channelsList');
         const currentChannelName = document.getElementById('currentChannelName');
 
-        // 3. Dynamic Application State Variables
-        let activeRoomId = null;
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const accentColorPicker = document.getElementById('accentColorPicker');
+        
+        // Media Call Elements
+        const startVoiceCallBtn = document.getElementById('startVoiceCallBtn');
+        const startVideoCallBtn = document.getElementById('startVideoCallBtn');
+        const callOverlay = document.getElementById('callOverlay');
+        const endCallBtn = document.getElementById('endCallBtn');
+        const jitsiContainer = document.getElementById('jitsiContainer');
 
-        // 4. Fetch and Render Group Chat Rooms Sidebar list
+        // 3. Application State
+        let isLoginMode = false;
+        let currentUser = null;
+        let activeRoomId = null;
+        let jitsiAPI = null; // Holds the video call instance
+
+        // --- THEME & LOCAL STORAGE LOGIC ---
+        function applySavedPreferences() {
+            const savedTheme = localStorage.getItem('supachat_theme');
+            const savedColor = localStorage.getItem('supachat_color');
+
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                document.body.classList.remove('light-mode');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+
+            if (savedColor) {
+                document.documentElement.style.setProperty('--accent', savedColor);
+                accentColorPicker.value = savedColor;
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            themeToggleBtn.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            localStorage.setItem('supachat_theme', isLight ? 'light' : 'dark');
+        });
+
+        accentColorPicker.addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            document.documentElement.style.setProperty('--accent', newColor);
+            localStorage.setItem('supachat_color', newColor);
+        });
+
+        // --- REAL JITSI CALL LOGIC ---
+        function startCall(isVideo) {
+            if (!activeRoomId) return alert("Please select a chat room first!");
+            
+            // Clean up any old instances just in case
+            if (jitsiAPI) jitsiAPI.dispose();
+            
+            callOverlay.style.display = "flex";
+            
+            // Create a unique room name using the chat name and ID so everyone in the channel joins the same call
+            const safeRoomName = currentChannelName.textContent.replace(/[^a-zA-Z0-9]/g, '');
+            const callRoomId = `SupaChat_${activeRoomId}_${safeRoomName}`;
+
+            const domain = 'meet.jit.si';
+            const options = {
+                roomName: callRoomId,
+                width: '100%',
+                height: '100%',
+                parentNode: jitsiContainer,
+                userInfo: {
+                    displayName: currentUser.user_metadata?.username || 'Anonymous'
+                },
+                configOverwrite: {
+                    startWithVideoMuted: !isVideo,
+                    startWithAudioMuted: false,
+                    prejoinPageEnabled: false // skips the pre-join screen to jump right into the chat
+                }
+            };
+            
+            // Initialize the iframe connection
+            jitsiAPI = new JitsiMeetExternalAPI(domain, options);
+        }
+
+        startVoiceCallBtn.addEventListener('click', () => startCall(false));
+        startVideoCallBtn.addEventListener('click', () => startCall(true));
+
+        endCallBtn.addEventListener('click', () => {
+            if (jitsiAPI) {
+                jitsiAPI.dispose(); // Destroys the iframe securely
+                jitsiAPI = null;
+            }
+            callOverlay.style.display = "none";
+        });
+        
+        endCallBtn.addEventListener('mouseenter', (e) => e.target.style.filter = "brightness(0.8)");
+        endCallBtn.addEventListener('mouseleave', (e) => e.target.style.filter = "none");
+
+        // --- AUTHENTICATION LOGIC ---
+        toggleAuthBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                authTitle.textContent = "Log In";
+                authBtn.textContent = "Log In";
+                registerFields.style.display = "none";
+                toggleAuthBtn.textContent = "Need an account? Sign up.";
+            } else {
+                authTitle.textContent = "Create Account";
+                authBtn.textContent = "Sign Up";
+                registerFields.style.display = "block";
+                toggleAuthBtn.textContent = "Already have an account? Log in.";
+            }
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('password').value;
+            const dummyEmail = `${username}@supachat.local`.toLowerCase();
+
+            if (isLoginMode) {
+                const { data, error } = await supabase2.auth.signInWithPassword({ 
+                    email: dummyEmail, 
+                    password 
+                });
+                
+                if (error) alert("Login failed: " + error.message);
+                else checkSession();
+            } else {
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+
+                if (!firstName || !lastName) {
+                    alert("First and Last name are required to sign up.");
+                    return;
+                }
+
+                const { data, error } = await supabase2.auth.signUp({
+                    email: dummyEmail,
+                    password,
+                    options: {
+                        data: { 
+                            first_name: firstName, 
+                            last_name: lastName, 
+                            username: username 
+                        }
+                    }
+                });
+                
+                if (error) alert("Signup error: " + error.message);
+                else {
+                    alert("Account created successfully! You are now logging in.");
+                    checkSession();
+                }
+            }
+        });
+
+        async function checkSession() {
+            const { data: { session } } = await supabase2.auth.getSession();
+            
+            if (session) {
+                currentUser = session.user;
+                authModal.style.display = "none";
+                mainApp.style.display = "flex";
+                
+                currentUserDisplay.textContent = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                
+                fetchRooms(); 
+            } else {
+                authModal.style.display = "flex";
+                mainApp.style.display = "none";
+            }
+        }
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabase2.auth.signOut();
+            currentUser = null;
+            activeRoomId = null;
+            chatBox.innerHTML = '';
+            checkSession();
+        });
+
+        // --- CHAT APPLICATION LOGIC ---
+        createChatBtn.addEventListener('click', async () => {
+            const roomName = prompt("Enter new chat room name:");
+            if (!roomName) return;
+
+            const { error } = await supabase2
+                .from('rooms')
+                .insert([{ name: roomName }]);
+            
+            if (error) alert("Error creating room: " + error.message);
+            else fetchRooms();
+        });
+
         async function fetchRooms() {
             const { data: rooms, error } = await supabase2
                 .from('rooms')
@@ -385,7 +807,7 @@
                 return;
             }
 
-            channelsList.innerHTML = ''; // Clear skeleton UI loading logs
+            channelsList.innerHTML = ''; 
             
             if (rooms && rooms.length > 0) {
                 rooms.forEach((room, index) => {
@@ -397,35 +819,31 @@
                     roomEl.addEventListener('click', () => switchRoom(room.id, room.name));
                     channelsList.appendChild(roomEl);
 
-                    // Default route context initial fallback selection 
-                    if (index === 0) {
+                    if (index === 0 && !activeRoomId) {
                         switchRoom(room.id, room.name);
                     }
                 });
             }
         }
 
-        // 5. Context Switch Router function for changing chat rooms
         async function switchRoom(roomId, roomName) {
             if (activeRoomId === roomId) return;
             activeRoomId = roomId;
             
-            // Update Channel Name Display
             currentChannelName.textContent = `# ${roomName}`;
             
-            // Toggle active classes on visual elements
             document.querySelectorAll('.channel-item').forEach(el => {
                 if (el.getAttribute('data-id') === roomId) el.classList.add('active');
                 else el.classList.remove('active');
             });
 
-            // Clear output window canvas and request new contextual scope
             chatBox.innerHTML = '';
             await fetchMessages();
         }
 
-        // 6. Fetch Existing Isolated Chat Stream History by Room ID
         async function fetchMessages() {
+            if (!activeRoomId) return;
+
             const { data, error } = await supabase2
                 .from('messages')
                 .select('*')
@@ -436,52 +854,63 @@
             else data.forEach(msg => appendMessage(msg));
         }
 
-        // 7. Inject Raw Message elements into Output Viewport
         function appendMessage(msg) {
-            const currentUsername = usernameInput.value.trim() || 'Anonymous';
-            const isSelf = msg.username === currentUsername;
+            if (!currentUser) return;
+
+            const isSelf = msg.username === currentUser.user_metadata?.username; 
+            
+            // Format the time from the database created_at field, fallback to current time for optimistic UI updates
+            const timeString = msg.created_at 
+                ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
             const msgElement = document.createElement('div');
             msgElement.classList.add('message');
             if (isSelf) msgElement.classList.add('self');
 
             msgElement.innerHTML = `
-                <span class="msg-user">${isSelf ? 'You' : msg.username}</span>
+                <div class="msg-header">
+                    <span class="msg-user">${isSelf ? 'You' : (msg.username || 'Anonymous')}</span>
+                    <span class="msg-time">${timeString}</span>
+                </div>
                 <span class="msg-text">${msg.content}</span>
             `;
             chatBox.appendChild(msgElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // 8. Intercept Outbound Forms Submission & Bind Active Room ID Scope
         messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const content = messageInput.value.trim();
-            const username = usernameInput.value.trim() || 'Anonymous';
 
-            if (!content || !activeRoomId) return;
+            if (!content || !activeRoomId || !currentUser) return;
 
-            // Send payload safely contextualized to the group room being viewed
+            const username = currentUser.user_metadata?.username || 'Anonymous';
+
             const { error } = await supabase2
                 .from('messages')
-                .insert([{ username, content, room_id: activeRoomId }]);
+                .insert([{ 
+                    username: username, 
+                    content: content, 
+                    room_id: activeRoomId 
+                }]);
 
-            if (error) console.error('Error sending message payload:', error);
+            if (error) console.error('Error sending message:', error);
             else messageInput.value = '';
         });
 
-        // 9. Realtime Channel Multi-Tenant Listener Event Handling Filter
         supabase2
             .channel('public:messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                // Only append live database updates if the message belongs to the current room
                 if (payload.new.room_id === activeRoomId) {
                     appendMessage(payload.new);
                 }
             })
             .subscribe();
 
-        // Fire application launch cycle sequence
-        fetchRooms();
+        // Boot Application
+        applySavedPreferences();
+        checkSession();
     </script>
 </body>
 </html>
