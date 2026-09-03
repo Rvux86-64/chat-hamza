@@ -778,47 +778,64 @@ messageForm.addEventListener('submit', async (e) => {
         }
 
         try {
-            switch (command) {
-                case 'block':
-                    if (!target) return alert("Usage: /block [username]");
-                    const { error: blockErr } = await supabase2.from('banned_users').insert([{ username: target }]);
-                    if (blockErr) alert("Error: " + blockErr.message);
-                    else alert(`${target} has been blocked.`);
-                    break;
+           switch (command) {
+    case 'block':
+        if (!target) return alert("Usage: /block [username]");
+        const { error: blockErr } = await supabase2.from('banned_users').insert([{ username: target }]);
+        if (blockErr) alert("Error: " + blockErr.message);
+        else alert(`${target} has been blocked.`);
+        break;
 
-                case 'lock':
-                    const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
-                    if (lockErr) alert("Error: " + lockErr.message);
-                    else alert("Room locked.");
-                    break;
+    case 'unblock':
+        if (!target) return alert("Usage: /unblock [username]");
+        const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
+        if (unblockErr) alert("Error: " + unblockErr.message);
+        else alert(`${target} has been unblocked.`);
+        break;
 
-                case 'mod':
-                    if (!isSuperMod) return alert("Only the Supermod can promote users.");
-                    if (!target) return alert("Usage: /mod [username]");
-                    const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
-                    if (modErr) alert("Error: " + modErr.message);
-                    else alert(`${target} is now a mod.`);
-                    break;
+    case 'lock':
+        const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
+        if (lockErr) alert("Error: " + lockErr.message);
+        else alert("Room locked.");
+        break;
 
-                case 'unmod':
-                    if (!isSuperMod) return alert("Only the Supermod can demote users.");
-                    if (!target) return alert("Usage: /unmod [username]");
-                    const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
-                    if (unmodErr) alert("Error: " + unmodErr.message);
-                    else alert(`${target} has been removed from mods.`);
-                    break;
+    case 'unlock':
+        const { error: unlockErr } = await supabase2.from('rooms').update({ is_locked: false }).eq('id', activeRoomId);
+        if (unlockErr) alert("Error: " + unlockErr.message);
+        else alert("Room unlocked.");
+        break;
 
-                case 'supermod':
-                    if (!isSuperMod) return alert("Only the Supermod can promote other Supermods.");
-                    if (!target) return alert("Usage: /supermod [username]");
-                    const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
-                    if (smErr) alert("Error: " + smErr.message);
-                    else alert(`${target} is now a Supermod.`);
-                    break;
+    case 'mod':
+        if (!isSuperMod) return alert("Only the Supermod can do this.");
+        if (!target) return alert("Usage: /mod [username]");
+        const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
+        if (modErr) alert("Error: " + modErr.message);
+        else alert(`${target} is now a mod.`);
+        break;
 
-                default:
-                    alert(`Unknown command: /${command}`);
-            }
+    case 'unmod':
+        if (!isSuperMod) return alert("Only the Supermod can do this.");
+        if (!target) return alert("Usage: /unmod [username]");
+        
+        const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
+        
+        if (unmodErr) alert("Error: " + unmodErr.message);
+        else alert(`${target} has been removed from mods.`);
+        break;
+
+    case 'supermod':
+        if (!isSuperMod) return alert("Only the Supermod can do this.");
+        if (!target) return alert("Usage: /supermod [username]");
+        
+        const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
+        
+        if (smErr) alert("Error: " + smErr.message);
+        else alert(`${target} is now a Supermod in the database.`);
+        break;
+
+    default:
+        alert(`Unknown command: /${command}`);
+}
         } catch (error) {
             console.error("Command failed:", error);
             alert("Error executing command.");
