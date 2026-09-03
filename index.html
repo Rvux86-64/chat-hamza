@@ -378,6 +378,22 @@
     </div>
     
     <script>
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+        
+        function showNotification(username, message) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                // Only show if the user is looking at another tab or app
+                if (document.hidden) {
+                    new Notification(`New message from ${username}`, {
+                        body: message
+                    });
+                }
+            }
+        }
             // 1. Core Supabase App API Credentials
         const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0"
@@ -544,7 +560,7 @@
             }
         });
 
-        async function checkSession() {
+       async function checkSession() {
             const { data: { session } } = await supabase2.auth.getSession();
             if (session) {
                 currentUser = session.user;
@@ -558,6 +574,7 @@
                 currentUserAvatar.src = getAvatarUrl(uname, accent);
                 
                 fetchRooms(); 
+                requestNotificationPermission(); // Trigger the permission prompt here
             } else {
                 authModal.style.display = "flex";
                 mainApp.style.display = "none";
@@ -882,6 +899,7 @@ if (window.msgChannel) {
 
 window.msgChannel = supabase2
     .channel('messages-live-test')
+   .channel('messages-live-test')
     .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
@@ -889,6 +907,11 @@ window.msgChannel = supabase2
             if (!activeRoomId || payload.new.room_id == activeRoomId) {
                 if (!document.getElementById(`msg-${payload.new.id}`)) {
                     appendMessage(payload.new);
+                    
+                    // Trigger notification if the message is from another user
+                    if (currentUser && payload.new.username !== currentUser.user_metadata?.username) {
+                        showNotification(payload.new.username, payload.new.content);
+                    }
                 }
             }
         }
