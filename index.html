@@ -380,6 +380,7 @@
           padding: 12px 16px; 
           border-radius: 12px; 
           max-width: 70%; 
+          min-width: 150px;
           width: fit-content; 
           background: var(--msg-other); 
           color: var(--text-main); 
@@ -397,22 +398,36 @@
         .message:not(.self) { 
           border-bottom-left-radius: 2px; 
         }
+        
+        .msg-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 6px;
+          gap: 12px;
+        }
 
         .msg-user { 
           font-weight: 700; 
           font-size: 0.75rem; 
           color: var(--accent); 
-          display: block; 
-          margin-bottom: 4px; 
         }
 
-        .message.self .msg-user { 
-          color: rgba(255,255,255,0.8); 
+        .msg-time {
+          font-size: 0.65rem;
+          color: var(--text-muted);
+          opacity: 0.8;
+          white-space: nowrap;
+        }
+
+        .message.self .msg-user, .message.self .msg-time { 
+          color: rgba(255,255,255,0.85); 
         }
 
         .msg-text { 
           font-size: 0.95rem; 
           line-height: 1.4; 
+          display: block;
         }
 
         .chat-input-container { 
@@ -844,12 +859,20 @@
 
             const isSelf = msg.username === currentUser.user_metadata?.username; 
             
+            // Format the time from the database created_at field, fallback to current time for optimistic UI updates
+            const timeString = msg.created_at 
+                ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
             const msgElement = document.createElement('div');
             msgElement.classList.add('message');
             if (isSelf) msgElement.classList.add('self');
 
             msgElement.innerHTML = `
-                <span class="msg-user">${isSelf ? 'You' : (msg.username || 'Anonymous')}</span>
+                <div class="msg-header">
+                    <span class="msg-user">${isSelf ? 'You' : (msg.username || 'Anonymous')}</span>
+                    <span class="msg-time">${timeString}</span>
+                </div>
                 <span class="msg-text">${msg.content}</span>
             `;
             chatBox.appendChild(msgElement);
