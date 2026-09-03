@@ -882,47 +882,31 @@ messageForm.addEventListener('submit', async (e) => {
             .subscribe();
         applySavedPreferences();
         checkSession();*/
-        // 1. Clean up old subscription if room changed
-if (window.messageChannel) {
-    supabase2.removeChannel(window.messageChannel);
+// Remove existing channel if it exists
+if (window.msgChannel) {
+    supabase2.removeChannel(window.msgChannel);
 }
 
-// 2. Subscribe with room-level filtering directly at the database level
-window.messageChannel = supabase2
-    .channel(`room:${activeRoomId}`)
+window.msgChannel = supabase2
+    .channel('messages-live-test')
     .on(
-        'postgres_changes', 
-        { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'messages',
-            filter: `room_id=eq.${activeRoomId}` // Only receive messages for active room
-        }, 
-        payload => {
-            // Prevent duplicates if already appended locally
-            if (!document.getElementById(`msg-${payload.new.id}`)) {
-                appendMessage(payload.new);
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+            console.log("Realtime message received:", payload);
+            
+            // Loose comparison in case room_id type differs (string vs uuid)
+            if (!activeRoomId || payload.new.room_id == activeRoomId) {
+                if (!document.getElementById(`msg-${payload.new.id}`)) {
+                    appendMessage(payload.new);
+                }
             }
         }
     )
-    .on(
-        'postgres_changes', 
-        { event: 'UPDATE', schema: 'public', table: 'messages' }, 
-        payload => {
-            const textElem = document.getElementById(`msg-text-${payload.new.id}`);
-            if (textElem) textElem.textContent = payload.new.content;
-        }
-    )
-    .on(
-        'postgres_changes', 
-        { event: 'DELETE', schema: 'public', table: 'messages' }, 
-        payload => {
-            const rowElem = document.getElementById(`msg-${payload.old.id}`);
-            if (rowElem) rowElem.remove();
-        }
-    )
-    .subscribe();
-
+    .subscribe((status, err) => {
+        console.log("Supabase Realtime Status:", status);
+        if (err) console.error("Realtime Subscription Error:", err);
+    });
 applySavedPreferences();
 checkSession();
     </script>
