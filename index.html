@@ -779,7 +779,6 @@ messageForm.addEventListener('submit', async (e) => {
 
         try {
            switch (command) {
-    case 'block':
      case 'block':
     if (!target) return alert("Usage: /block [username]");
     
@@ -793,7 +792,7 @@ messageForm.addEventListener('submit', async (e) => {
     if (blockErr) alert("Error: " + blockErr.message);
     else alert(`${target} has been blocked.`);
     break;
-                   case 'rename':
+                   case 'rename' || '/rename':
     if (!isSuperMod) return alert("Only the Supermod can do this.");
     
     // Splits input into old and new usernames (e.g. /rename OldName NewName)
