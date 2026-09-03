@@ -792,12 +792,16 @@ messageForm.addEventListener('submit', async (e) => {
     if (blockErr) alert("Error: " + blockErr.message);
     else alert(`${target} has been blocked.`);
     break;
-                   case 'rename' || '/rename':
+    case 'rename' || '/rename':
     if (!isSuperMod) return alert("Only the Supermod can do this.");
-    
-    // Splits input into old and new usernames (e.g. /rename OldName NewName)
-    const [oldName, newName] = target ? target.trim().split(/\s+/) : [];
-    if (!oldName || !newName) return alert("Usage: /rename [old_username] [new_username]");
+
+    // Gets the first and second word after /rename
+    const oldName = args[0];
+    const newName = args[1];
+
+    if (!oldName || !newName) {
+        return alert("Usage: /rename [old_username] [new_username]");
+    }
 
     const { error: renameErr } = await supabase2.rpc('rename_user', { 
         old_name: oldName, 
