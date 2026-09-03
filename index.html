@@ -753,7 +753,7 @@ messageForm.addEventListener('submit', async (e) => {
 
     const myUsername = currentUser.user_metadata?.username;
     
-    // Fetch the user's role dynamically so newly promoted mods/supermods can use commands
+    // Fetch user role dynamically
     const { data: roleData } = await supabase2
         .from('user_roles')
         .select('role')
@@ -761,100 +761,103 @@ messageForm.addEventListener('submit', async (e) => {
         .single();
 
     const userRole = roleData?.role || 'user';
-    // We keep hamzaperson2026 as a fallback in case the database entry was accidentally deleted
     const isSuperMod = userRole === 'supermod' || myUsername === 'hamzaperson2026';
     const isMod = isSuperMod || userRole === 'mod';
 
- async function handleCommand(inputString) {
-    // 1. Remove the leading '/' and split by spaces
-    const cleanInput = inputString.trim().replace(/^\//, '');
-    const parts = cleanInput.split(/\s+/);
+    async function handleCommand(inputString) {
+        const cleanInput = inputString.trim().replace(/^\//, '');
+        const parts = cleanInput.split(/\s+/);
 
-    // 2. Extract the command name and the array of arguments
-    const command = parts[0].toLowerCase(); // "rename"
-    const args = parts.slice(1);            // ["daddy", "lukas"]
-    const target = args[0];                 // "daddy"
+        const command = parts[0].toLowerCase();
+        const args = parts.slice(1);
+        const target = args[0];
 
-    // 3. Handle commands
-    switch (command) {
-        case 'block':
-            if (!target) return alert("Usage: /block [username]");
-            const { error: blockErr } = await supabase2
-                .from('banned_users')
-                .upsert({ username: target }, { onConflict: 'username', ignoreDuplicates: true });
-            if (blockErr) alert("Error: " + blockErr.message);
-            else alert(`${target} has been blocked.`);
-            break;
+        switch (command) {
+            case 'block':
+                if (!target) return alert("Usage: /block [username]");
+                const { error: blockErr } = await supabase2
+                    .from('banned_users')
+                    .upsert({ username: target }, { onConflict: 'username', ignoreDuplicates: true });
+                if (blockErr) alert("Error: " + blockErr.message);
+                else alert(`${target} has been blocked.`);
+                break;
 
-        case 'unblock':
-            if (!target) return alert("Usage: /unblock [username]");
-            const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
-            if (unblockErr) alert("Error: " + unblockErr.message);
-            else alert(`${target} has been unblocked.`);
-            break;
+            case 'unblock':
+                if (!target) return alert("Usage: /unblock [username]");
+                const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
+                if (unblockErr) alert("Error: " + unblockErr.message);
+                else alert(`${target} has been unblocked.`);
+                break;
 
-        case 'lock':
-            const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
-            if (lockErr) alert("Error: " + lockErr.message);
-            else alert("Room locked.");
-            break;
+            case 'lock':
+                const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
+                if (lockErr) alert("Error: " + lockErr.message);
+                else alert("Room locked.");
+                break;
 
-        case 'unlock':
-            const { error: unlockErr } = await supabase2.from('rooms').update({ is_locked: false }).eq('id', activeRoomId);
-            if (unlockErr) alert("Error: " + unlockErr.message);
-            else alert("Room unlocked.");
-            break;
+            case 'unlock':
+                const { error: unlockErr } = await supabase2.from('rooms').update({ is_locked: false }).eq('id', activeRoomId);
+                if (unlockErr) alert("Error: " + unlockErr.message);
+                else alert("Room unlocked.");
+                break;
 
-        case 'mod':
-            if (!isSuperMod) return alert("Only the Supermod can do this.");
-            if (!target) return alert("Usage: /mod [username]");
-            const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
-            if (modErr) alert("Error: " + modErr.message);
-            else alert(`${target} is now a mod.`);
-            break;
+            case 'mod':
+                if (!isSuperMod) return alert("Only the Supermod can do this.");
+                if (!target) return alert("Usage: /mod [username]");
+                const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
+                if (modErr) alert("Error: " + modErr.message);
+                else alert(`${target} is now a mod.`);
+                break;
 
-        case 'unmod':
-            if (!isSuperMod) return alert("Only the Supermod can do this.");
-            if (!target) return alert("Usage: /unmod [username]");
-            const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
-            if (unmodErr) alert("Error: " + unmodErr.message);
-            else alert(`${target} has been removed from mods.`);
-            break;
+            case 'unmod':
+                if (!isSuperMod) return alert("Only the Supermod can do this.");
+                if (!target) return alert("Usage: /unmod [username]");
+                const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
+                if (unmodErr) alert("Error: " + unmodErr.message);
+                else alert(`${target} has been removed from mods.`);
+                break;
 
-        case 'supermod':
-            if (!isSuperMod) return alert("Only the Supermod can do this.");
-            if (!target) return alert("Usage: /supermod [username]");
-            const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
-            if (smErr) alert("Error: " + smErr.message);
-            else alert(`${target} is now a Supermod in the database.`);
-            break;
+            case 'supermod':
+                if (!isSuperMod) return alert("Only the Supermod can do this.");
+                if (!target) return alert("Usage: /supermod [username]");
+                const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
+                if (smErr) alert("Error: " + smErr.message);
+                else alert(`${target} is now a Supermod in the database.`);
+                break;
 
-        case 'rename':
-            if (!isSuperMod) return alert("Only the Supermod can do this.");
-            
-            const oldName = args[0]; // daddy
-            const newName = args[1]; // lukas
+            case 'rename':
+                if (!isSuperMod) return alert("Only the Supermod can do this.");
+                
+                const oldName = args[0];
+                const newName = args[1];
 
-            if (!oldName || !newName) {
-                return alert("Usage: /rename [old_username] [new_username]");
-            }
+                if (!oldName || !newName) {
+                    return alert("Usage: /rename [old_username] [new_username]");
+                }
 
-            const { error: renameErr } = await supabase2.rpc('rename_user', { 
-                old_name: oldName, 
-                new_name: newName 
-            });
+                const { error: renameErr } = await supabase2.rpc('rename_user', { 
+                    old_name: oldName, 
+                    new_name: newName 
+                });
 
-            if (renameErr) alert("Error: " + renameErr.message);
-            else alert(`Successfully renamed ${oldName} to ${newName}.`);
-            break;
+                if (renameErr) alert("Error: " + renameErr.message);
+                else alert(`Successfully renamed ${oldName} to ${newName}.`);
+                break;
 
-        default:
-            alert(`Unknown command: /${command}`);
+            default:
+                alert(`Unknown command: /${command}`);
+        }
     }
-}
 
-    // --- Normal Message Sending Logic ---
-    messageInput.value = ''; // Clear early for better UX
+    // Check if input is a slash command
+    if (content.startsWith('/')) {
+        messageInput.value = '';
+        await handleCommand(content);
+        return;
+    }
+
+    // Normal message sending
+    messageInput.value = '';
     
     const { error } = await supabase2
         .from('messages')
@@ -871,26 +874,8 @@ messageForm.addEventListener('submit', async (e) => {
             : "Failed to send message.");
     }
 });
-        // Supabase Realtime Listener (Inserts, Updates, Deletes)
-       /* supabase2
-            .channel('public:messages')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                if (payload.new.room_id === activeRoomId) {
-                    appendMessage(payload.new);
-                }
-            })
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, payload => {
-                const textElem = document.getElementById(`msg-text-${payload.new.id}`);
-                if (textElem) textElem.textContent = payload.new.content;
-            })
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, payload => {
-                const rowElem = document.getElementById(`msg-${payload.old.id}`);
-                if (rowElem) rowElem.remove();
-            })
-            .subscribe();
-        applySavedPreferences();
-        checkSession();*/
-// Remove existing channel if it exists
+
+// Setup Realtime with full INSERT, UPDATE, and DELETE support
 if (window.msgChannel) {
     supabase2.removeChannel(window.msgChannel);
 }
@@ -901,9 +886,6 @@ window.msgChannel = supabase2
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-            console.log("Realtime message received:", payload);
-            
-            // Loose comparison in case room_id type differs (string vs uuid)
             if (!activeRoomId || payload.new.room_id == activeRoomId) {
                 if (!document.getElementById(`msg-${payload.new.id}`)) {
                     appendMessage(payload.new);
@@ -911,12 +893,31 @@ window.msgChannel = supabase2
             }
         }
     )
+    .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        (payload) => {
+            const textElem = document.getElementById(`msg-text-${payload.new.id}`);
+            if (textElem) textElem.textContent = payload.new.content;
+        }
+    )
+    .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'messages' },
+        (payload) => {
+            const rowElem = document.getElementById(`msg-${payload.old.id}`);
+            if (rowElem) rowElem.remove();
+        }
+    )
     .subscribe((status, err) => {
         console.log("Supabase Realtime Status:", status);
         if (err) console.error("Realtime Subscription Error:", err);
     });
+
 applySavedPreferences();
 checkSession();
+
+    
     </script>
 </body>
 </html>
