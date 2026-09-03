@@ -780,12 +780,19 @@ messageForm.addEventListener('submit', async (e) => {
         try {
            switch (command) {
     case 'block':
-        if (!target) return alert("Usage: /block [username]");
-        const { error: blockErr } = await supabase2.from('banned_users').insert([{ username: target }]);
-        if (blockErr) alert("Error: " + blockErr.message);
-        else alert(`${target} has been blocked.`);
-        break;
+     case 'block':
+    if (!target) return alert("Usage: /block [username]");
+    
+    const { error: blockErr } = await supabase2
+        .from('banned_users')
+        .upsert(
+            { username: target }, 
+            { onConflict: 'username', ignoreDuplicates: true }
+        );
 
+    if (blockErr) alert("Error: " + blockErr.message);
+    else alert(`${target} has been blocked.`);
+    break;
     case 'unblock':
         if (!target) return alert("Usage: /unblock [username]");
         const { error: unblockErr } = await supabase2.from('banned_users').delete().eq('username', target);
