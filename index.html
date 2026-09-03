@@ -752,15 +752,23 @@ messageForm.addEventListener('submit', async (e) => {
 
     const myUsername = currentUser.user_metadata?.username;
     
+    // Fetch the user's role dynamically so newly promoted mods/supermods can use commands
+    const { data: roleData } = await supabase2
+        .from('user_roles')
+        .select('role')
+        .eq('username', myUsername)
+        .single();
+
+    const userRole = roleData?.role || 'user';
+    // We keep hamzaperson2026 as a fallback in case the database entry was accidentally deleted
+    const isSuperMod = userRole === 'supermod' || myUsername === 'hamzaperson2026';
+    const isMod = isSuperMod || userRole === 'mod';
+
     // Command Interception
     if (content.startsWith('/')) {
         const args = content.slice(1).split(' ');
         const command = args[0].toLowerCase();
         const target = args[1];
-
-        // Replace with actual DB role check in production
-        const isSuperMod = myUsername === 'hamzaperson2026';
-        let isMod = isSuperMod; // Expand this to check a 'profiles' table for standard mods
 
         if (!isMod) {
             alert("Permission denied. Only mods can use commands.");
@@ -772,27 +780,39 @@ messageForm.addEventListener('submit', async (e) => {
             switch (command) {
                 case 'block':
                     if (!target) return alert("Usage: /block [username]");
-                    // Example DB call: await supabase2.from('blocks').insert([{ blocked_user: target }]);
-                    alert(`${target} has been blocked.`);
+                    const { error: blockErr } = await supabase2.from('banned_users').insert([{ username: target }]);
+                    if (blockErr) alert("Error: " + blockErr.message);
+                    else alert(`${target} has been blocked.`);
                     break;
 
                 case 'lock':
-                    // Example DB call: await supabase2.from('rooms').update({ locked: true }).eq('id', activeRoomId);
-                    alert("This chat room is now locked.");
+                    const { error: lockErr } = await supabase2.from('rooms').update({ is_locked: true }).eq('id', activeRoomId);
+                    if (lockErr) alert("Error: " + lockErr.message);
+                    else alert("Room locked.");
                     break;
 
                 case 'mod':
                     if (!isSuperMod) return alert("Only the Supermod can promote users.");
                     if (!target) return alert("Usage: /mod [username]");
-                    // Example DB call: await supabase2.from('profiles').update({ role: 'mod' }).eq('username', target);
-                    alert(`${target} is now a moderator.`);
+                    const { error: modErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'mod' });
+                    if (modErr) alert("Error: " + modErr.message);
+                    else alert(`${target} is now a mod.`);
                     break;
-                    
+
                 case 'unmod':
                     if (!isSuperMod) return alert("Only the Supermod can demote users.");
                     if (!target) return alert("Usage: /unmod [username]");
-                    // Example DB call: await supabase2.from('profiles').update({ role: 'user' }).eq('username', target);
-                    alert(`${target} has been removed from moderators.`);
+                    const { error: unmodErr } = await supabase2.from('user_roles').delete().eq('username', target);
+                    if (unmodErr) alert("Error: " + unmodErr.message);
+                    else alert(`${target} has been removed from mods.`);
+                    break;
+
+                case 'supermod':
+                    if (!isSuperMod) return alert("Only the Supermod can promote other Supermods.");
+                    if (!target) return alert("Usage: /supermod [username]");
+                    const { error: smErr } = await supabase2.from('user_roles').upsert({ username: target, role: 'supermod' });
+                    if (smErr) alert("Error: " + smErr.message);
+                    else alert(`${target} is now a Supermod.`);
                     break;
 
                 default:
@@ -820,7 +840,9 @@ messageForm.addEventListener('submit', async (e) => {
 
     if (error) {
         console.error('Error sending message:', error);
-        alert("Failed to send message.");
+        alert(error.message.includes('Secure message sending') 
+            ? "Cannot send message. You may be blocked, or the room is locked." 
+            : "Failed to send message.");
     }
 });
         // Supabase Realtime Listener (Inserts, Updates, Deletes)
