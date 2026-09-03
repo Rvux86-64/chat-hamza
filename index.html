@@ -744,23 +744,85 @@
 
             if (error) alert("Failed to delete message: " + error.message);
         }
+messageForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const content = messageInput.value.trim();
 
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const content = messageInput.value.trim();
+    if (!content || !activeRoomId || !currentUser) return;
 
-            if (!content || !activeRoomId || !currentUser) return;
+    const myUsername = currentUser.user_metadata?.username;
+    
+    // Command Interception
+    if (content.startsWith('/')) {
+        const args = content.slice(1).split(' ');
+        const command = args[0].toLowerCase();
+        const target = args[1];
 
-            const username = currentUser.user_metadata?.username || 'Anonymous';
+        // Replace with actual DB role check in production
+        const isSuperMod = myUsername === 'hamzaperson2026';
+        let isMod = isSuperMod; // Expand this to check a 'profiles' table for standard mods
 
-            const { error } = await supabase2
-                .from('messages')
-                .insert([{ username: username, content: content, room_id: activeRoomId }]);
+        if (!isMod) {
+            alert("Permission denied. Only mods can use commands.");
+            messageInput.value = '';
+            return;
+        }
 
-            if (error) console.error('Error sending message:', error);
-            else messageInput.value = '';
-        });
+        try {
+            switch (command) {
+                case 'block':
+                    if (!target) return alert("Usage: /block [username]");
+                    // Example DB call: await supabase2.from('blocks').insert([{ blocked_user: target }]);
+                    alert(`${target} has been blocked.`);
+                    break;
 
+                case 'lock':
+                    // Example DB call: await supabase2.from('rooms').update({ locked: true }).eq('id', activeRoomId);
+                    alert("This chat room is now locked.");
+                    break;
+
+                case 'mod':
+                    if (!isSuperMod) return alert("Only the Supermod can promote users.");
+                    if (!target) return alert("Usage: /mod [username]");
+                    // Example DB call: await supabase2.from('profiles').update({ role: 'mod' }).eq('username', target);
+                    alert(`${target} is now a moderator.`);
+                    break;
+                    
+                case 'unmod':
+                    if (!isSuperMod) return alert("Only the Supermod can demote users.");
+                    if (!target) return alert("Usage: /unmod [username]");
+                    // Example DB call: await supabase2.from('profiles').update({ role: 'user' }).eq('username', target);
+                    alert(`${target} has been removed from moderators.`);
+                    break;
+
+                default:
+                    alert(`Unknown command: /${command}`);
+            }
+        } catch (error) {
+            console.error("Command failed:", error);
+            alert("Error executing command.");
+        }
+
+        messageInput.value = '';
+        return; // Stop here so the command doesn't send as a chat message
+    }
+
+    // --- Normal Message Sending Logic ---
+    messageInput.value = ''; // Clear early for better UX
+    
+    const { error } = await supabase2
+        .from('messages')
+        .insert([{ 
+            room_id: activeRoomId, 
+            content: content,
+            username: myUsername
+        }]);
+
+    if (error) {
+        console.error('Error sending message:', error);
+        alert("Failed to send message.");
+    }
+});
         // Supabase Realtime Listener (Inserts, Updates, Deletes)
         supabase2
             .channel('public:messages')
