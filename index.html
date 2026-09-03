@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supabase Chat Dashboard</title>
-    <!-- FontAwesome Premium Modern Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Include Supabase JS CDN Client Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
     
     <style>
         :root {
@@ -113,7 +112,7 @@
           box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2); 
         }
 
-        .auth-box button, #endCallBtn {
+        .auth-box button {
           width: 100%;
           padding: 14px;
           background: var(--accent);
@@ -126,7 +125,7 @@
           transition: filter 0.2s;
         }
 
-        .auth-box button:hover, .chat-input-container button:hover, #endCallBtn:hover {
+        .auth-box button:hover, .chat-input-container button:hover {
           filter: brightness(0.85);
         }
 
@@ -483,7 +482,6 @@
 </head>
 <body>
 
-    <!-- Authentication Modal -->
     <div id="authModal" class="auth-modal">
         <div class="auth-box">
             <h2 id="authTitle">Create Account</h2>
@@ -492,7 +490,6 @@
                     <input type="text" id="firstName" placeholder="First Name">
                     <input type="text" id="lastName" placeholder="Last Name">
                 </div>
-                <!-- Username is used to generate a hidden email for Supabase Auth -->
                 <input type="text" id="authUsername" placeholder="Username" required autocomplete="off">
                 <input type="password" id="password" placeholder="Password" required>
                 <button type="submit" id="authBtn">Sign Up</button>
@@ -501,39 +498,29 @@
         </div>
     </div>
 
-    <!-- Video/Voice Call Overlay Modal -->
-    <div id="callOverlay" class="auth-modal" style="display: none; z-index: 2000;">
-        <div class="auth-box" style="align-items: center; text-align: center;">
-            <h2 id="callTypeTitle">Calling...</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;" id="callStatusText">Connecting securely...</p>
-            <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--panel-bg); border: 4px solid var(--accent); display: flex; justify-content: center; align-items: center; font-size: 3rem; margin-bottom: 30px; animation: pulse 2s infinite;">
-                <i id="callIcon" class="fa-solid fa-user"></i>
-            </div>
-            <button id="endCallBtn" style="background: #ef4444;"><i class="fa-solid fa-phone-slash"></i> End Call</button>
-        </div>
+    <div id="callOverlay" class="auth-modal" style="display: none; z-index: 2000; flex-direction: column;">
+        <div id="jitsiContainer" style="width: 85%; height: 85%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);"></div>
+        <button id="endCallBtn" style="background: #ef4444; padding: 12px 24px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: filter 0.2s;">
+            <i class="fa-solid fa-phone-slash"></i> Close Call Window
+        </button>
     </div>
 
-    <!-- Main Chat Interface (Hidden until logged in) -->
     <div class="chat-wrapper" id="mainApp" style="display: none;">
-        <!-- Sidebar Dashboard Info -->
         <div class="sidebar">
             <div class="brand">
                 <i class="fa-solid fa-circle-nodes"></i>
                 <span>SupaChat v2</span>
             </div>
             
-            <!-- Dynamic Channels Navigation -->
             <div class="channels-section">
                 <div class="section-header">
                     <label class="section-title"><i class="fa-solid fa-comments"></i> Group Chats</label>
                     <button id="createChatBtn" class="icon-btn" title="Create new chat"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div class="channels-list" id="channelsList">
-                    <!-- Dynamic channels injection stream -->
-                </div>
+                    </div>
             </div>
 
-            <!-- Current User Card with Theme/Color Settings -->
             <div class="user-card">
                 <label><i class="fa-solid fa-user-shield"></i> Current Profile</label>
                 <div id="currentUserDisplay" class="current-user-text">Loading...</div>
@@ -555,7 +542,6 @@
             </div>
         </div>
 
-        <!-- Main Chat Window Area -->
         <div class="main-chat">
             <div class="chat-header">
                 <div class="header-info">
@@ -568,8 +554,7 @@
                 </div>
             </div>
             <div class="chat-box" id="chatBox">
-                <!-- Messages dynamic injection stream -->
-            </div>
+                </div>
             <form class="chat-input-container" id="messageForm">
                 <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off">
                 <button type="submit" id="sendBtn">
@@ -603,20 +588,21 @@
         const channelsList = document.getElementById('channelsList');
         const currentChannelName = document.getElementById('currentChannelName');
 
-        // Theme & Media Call Elements
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const accentColorPicker = document.getElementById('accentColorPicker');
+        
+        // Media Call Elements
         const startVoiceCallBtn = document.getElementById('startVoiceCallBtn');
         const startVideoCallBtn = document.getElementById('startVideoCallBtn');
         const callOverlay = document.getElementById('callOverlay');
         const endCallBtn = document.getElementById('endCallBtn');
-        const callTypeTitle = document.getElementById('callTypeTitle');
-        const callIcon = document.getElementById('callIcon');
+        const jitsiContainer = document.getElementById('jitsiContainer');
 
         // 3. Application State
         let isLoginMode = false;
         let currentUser = null;
         let activeRoomId = null;
+        let jitsiAPI = null; // Holds the video call instance
 
         // --- THEME & LOCAL STORAGE LOGIC ---
         function applySavedPreferences() {
@@ -650,24 +636,52 @@
             localStorage.setItem('supachat_color', newColor);
         });
 
-        // --- CALL UI LOGIC ---
-        startVoiceCallBtn.addEventListener('click', () => {
+        // --- REAL JITSI CALL LOGIC ---
+        function startCall(isVideo) {
             if (!activeRoomId) return alert("Please select a chat room first!");
-            callTypeTitle.textContent = "Voice Call Started";
-            callIcon.className = "fa-solid fa-phone-volume";
+            
+            // Clean up any old instances just in case
+            if (jitsiAPI) jitsiAPI.dispose();
+            
             callOverlay.style.display = "flex";
-        });
+            
+            // Create a unique room name using the chat name and ID so everyone in the channel joins the same call
+            const safeRoomName = currentChannelName.textContent.replace(/[^a-zA-Z0-9]/g, '');
+            const callRoomId = `SupaChat_${activeRoomId}_${safeRoomName}`;
 
-        startVideoCallBtn.addEventListener('click', () => {
-            if (!activeRoomId) return alert("Please select a chat room first!");
-            callTypeTitle.textContent = "Video Call Started";
-            callIcon.className = "fa-solid fa-video";
-            callOverlay.style.display = "flex";
-        });
+            const domain = 'meet.jit.si';
+            const options = {
+                roomName: callRoomId,
+                width: '100%',
+                height: '100%',
+                parentNode: jitsiContainer,
+                userInfo: {
+                    displayName: currentUser.user_metadata?.username || 'Anonymous'
+                },
+                configOverwrite: {
+                    startWithVideoMuted: !isVideo,
+                    startWithAudioMuted: false,
+                    prejoinPageEnabled: false // skips the pre-join screen to jump right into the chat
+                }
+            };
+            
+            // Initialize the iframe connection
+            jitsiAPI = new JitsiMeetExternalAPI(domain, options);
+        }
+
+        startVoiceCallBtn.addEventListener('click', () => startCall(false));
+        startVideoCallBtn.addEventListener('click', () => startCall(true));
 
         endCallBtn.addEventListener('click', () => {
+            if (jitsiAPI) {
+                jitsiAPI.dispose(); // Destroys the iframe securely
+                jitsiAPI = null;
+            }
             callOverlay.style.display = "none";
         });
+        
+        endCallBtn.addEventListener('mouseenter', (e) => e.target.style.filter = "brightness(0.8)");
+        endCallBtn.addEventListener('mouseleave', (e) => e.target.style.filter = "none");
 
         // --- AUTHENTICATION LOGIC ---
         toggleAuthBtn.addEventListener('click', () => {
