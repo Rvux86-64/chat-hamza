@@ -3,667 +3,740 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Chat - Pro</title>
-    <!-- FontAwesome Icons -->
+    <title>Supabase Chat Dashboard</title>
+    <!-- FontAwesome Premium Modern Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS -->
+    <!-- Include Supabase JS CDN Client Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
-            /* Default Dark Theme */
-            --bg-main: #0b0f19;
-            --panel-bg: #111827;
-            --accent: #3b82f6; 
-            --accent-hover: #2563eb;
-            --border-color: #1f2937;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --msg-self: var(--accent);
-            --msg-other: #1f2937;
-            --msg-text-self: #ffffff;
+          --bg-main: #0b0f19;
+          --panel-bg: #111827;
+          --accent: #10b981;
+          --accent-hover: #059669;
+          --border-color: #1f2937;
+          --text-main: #f3f4f6;
+          --text-muted: #9ca3af;
+          --msg-self: #047857;
+          --msg-other: #1f2937;
         } 
 
-        /* Light Theme Overrides */
-        body.light-mode {
-            --bg-main: #f3f4f6;
-            --panel-bg: #ffffff;
-            --border-color: #e5e7eb;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --msg-other: #e5e7eb;
-        }
-
         * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+          box-sizing: border-box; 
+          margin: 0; 
+          padding: 0; 
+          font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
         }
 
         body { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            overflow: hidden; 
-            transition: background-color 0.3s ease;
+          display: flex; 
+          justify-content: center; 
+          align-items: center; 
+          height: 100vh; 
+          background-color: var(--bg-main); 
+          background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%); 
+          color: var(--text-main); 
+          overflow: hidden; 
         }
 
-        /* --- Login Modal --- */
+        /* --- Auth Modal Styles --- */
         .auth-modal {
-            position: fixed; 
-            inset: 0; 
-            background: rgba(11, 15, 25, 0.95);
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 1000;
+          position: fixed;
+          inset: 0;
+          background: rgba(11, 15, 25, 0.95);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
         }
 
         .auth-box {
-            background: var(--panel-bg); 
-            padding: 32px; 
-            border-radius: 12px;
-            border: 1px solid var(--border-color); 
-            width: 100%; 
-            max-width: 350px;
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
-            text-align: center;
+          background: var(--panel-bg);
+          padding: 32px;
+          border-radius: 12px;
+          border: 1px solid var(--border-color);
+          width: 100%;
+          max-width: 400px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
 
-        .auth-box h2 { 
-            color: var(--accent); 
-        }
-
-        .auth-box p { 
-            color: var(--text-muted); 
-            font-size: 0.9rem; 
-            margin-bottom: 10px; 
+        .auth-box h2 {
+          color: var(--accent);
+          margin-bottom: 8px;
+          text-align: center;
         }
 
         .auth-box input {
-            width: 100%; 
-            background: var(--bg-main); 
-            border: 1px solid var(--border-color);
-            color: var(--text-main); 
-            padding: 12px; 
-            border-radius: 8px;
-            outline: none; 
-            font-size: 1rem; 
+          width: 100%;
+          background: #1f2937;
+          border: 1px solid #374151;
+          color: var(--text-main);
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 12px;
+          outline: none;
+          font-size: 0.95rem;
+          transition: all 0.2s;
         }
         
-        .auth-box input:focus { 
-            border-color: var(--accent); 
+        .auth-box input:focus {
+          border-color: var(--accent); 
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); 
         }
 
         .auth-box button {
-            width: 100%; 
-            padding: 14px; 
-            background: var(--accent);
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer;
-            font-weight: bold; 
-            font-size: 1rem; 
-            transition: background 0.2s;
+          width: 100%;
+          padding: 14px;
+          background: var(--accent);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 1rem;
+          transition: background 0.2s;
         }
 
-        .auth-box button:hover { 
-            background: var(--accent-hover); 
+        .auth-box button:hover {
+          background: var(--accent-hover);
         }
 
-        /* --- App Layout --- */
+        .auth-toggle {
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+
+        .auth-toggle:hover {
+          color: var(--accent);
+        }
+
+        /* --- Main App Styles --- */
         .chat-wrapper { 
-            display: flex; 
-            width: 950px; 
-            height: 700px; 
-            background: var(--panel-bg); 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+          display: flex; 
+          width: 950px; 
+          height: 700px; 
+          background: rgba(17, 24, 39, 0.8); 
+          backdrop-filter: blur(12px); 
+          border: 1px solid var(--border-color); 
+          border-radius: 16px; 
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); 
+          overflow: hidden; 
         }
 
         .sidebar { 
-            width: 260px; 
-            background: var(--bg-main); 
-            border-right: 1px solid var(--border-color); 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            transition: background-color 0.3s ease;
+          width: 280px; 
+          background: #0d1321; 
+          border-right: 1px solid var(--border-color); 
+          padding: 24px; 
+          display: flex; 
+          flex-direction: column; 
+          gap: 24px; 
         }
 
         .brand { 
-            font-size: 1.2rem; 
-            font-weight: bold; 
-            color: var(--accent); 
-            display: flex;
-            align-items: center;
-            gap: 10px;
+          display: flex; 
+          align-items: center; 
+          gap: 12px; 
+          font-size: 1.3rem; 
+          font-weight: 700; 
+          color: var(--accent); 
         }
 
-        /* --- Customization Controls --- */
-        .controls-row { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: var(--panel-bg); 
-            padding: 10px 15px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-color); 
-        }
-
-        .icon-btn { 
-            background: none; 
-            border: none; 
-            color: var(--text-muted); 
-            cursor: pointer; 
-            font-size: 1.1rem; 
-            transition: color 0.2s;
-        }
-
-        .icon-btn:hover { 
-            color: var(--accent); 
-        }
-
-        input[type="color"] { 
-            border: none; 
-            width: 28px; 
-            height: 28px; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            background: transparent; 
-        }
-
-        input[type="color"]::-webkit-color-swatch { 
-            border-radius: 50%; 
-            border: none; 
-        }
-
-        /* --- Channels --- */
-        .channels-section { 
-            flex: 1; 
-            overflow-y: auto; 
-        }
-
-        .section-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            color: var(--text-muted); 
-            font-size: 0.8rem; 
-            text-transform: uppercase; 
-            font-weight: bold;
+        .channels-section {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          flex: 1;
+          overflow-y: auto;
         }
         
-        .channel-item { 
-            padding: 10px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            color: var(--text-muted); 
-            margin-bottom: 4px; 
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
-        .channel-item:hover { 
-            background: rgba(128,128,128,0.1); 
+        .section-title {
+          font-size: 0.75rem; 
+          color: var(--text-muted); 
+          text-transform: uppercase; 
+          letter-spacing: 0.5px;
+          font-weight: 600;
         }
 
-        .channel-item.active { 
-            background: rgba(59, 130, 246, 0.15); 
-            color: var(--accent); 
-            font-weight: bold; 
+        .icon-btn {
+          background: transparent;
+          color: var(--text-muted);
+          border: none;
+          cursor: pointer;
+          padding: 4px;
+          transition: color 0.2s;
+        }
+        
+        .icon-btn:hover {
+          color: var(--accent);
         }
 
-        /* --- User Profile Card --- */
+        .channels-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .channel-item {
+          display: flex;
+          align-items: center;
+          padding: 10px 14px;
+          border-radius: 8px;
+          cursor: pointer;
+          color: var(--text-muted);
+          font-size: 0.95rem;
+          transition: all 0.2s ease;
+        }
+
+        .channel-item:hover {
+          background: rgba(255, 255, 255, 0.03);
+          color: var(--text-main);
+        }
+
+        .channel-item.active {
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--accent);
+          font-weight: 600;
+        }
+
         .user-card { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            background: var(--panel-bg); 
-            padding: 15px; 
-            border-radius: 8px; 
-            border: 1px solid var(--border-color); 
+          display: flex; 
+          flex-direction: column; 
+          gap: 8px; 
+          background: rgba(255,255,255,0.02); 
+          padding: 14px; 
+          border-radius: 8px; 
+          border: 1px solid var(--border-color); 
         }
 
-        .avatar { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            background: var(--accent); 
-            object-fit: cover; 
+        .user-card label { 
+          font-size: 0.75rem; 
+          color: var(--text-muted); 
+          text-transform: uppercase; 
+          letter-spacing: 0.5px; 
+        }
+        
+        .current-user-text {
+          font-weight: bold;
+          color: var(--text-main);
+          font-size: 0.95rem;
+          padding: 4px 0;
         }
 
-        .user-info { 
-            flex: 1; 
-            overflow: hidden; 
+        .logout-btn {
+          background: transparent;
+          border: 1px solid #ef4444;
+          color: #ef4444;
+          padding: 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.8rem;
+          transition: all 0.2s;
+          margin-top: 4px;
         }
-
-        .user-info span { 
-            display: block; 
-            font-weight: bold; 
-            font-size: 0.95rem; 
-            text-overflow: ellipsis; 
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .logout-btn { 
-            background: transparent; 
-            border: none; 
-            color: #ef4444; 
-            cursor: pointer; 
-            font-size: 0.8rem; 
-            margin-top: 4px; 
-            padding: 0;
-            text-align: left;
-        }
-
+        
         .logout-btn:hover {
-            text-decoration: underline;
+          background: rgba(239, 68, 68, 0.1);
         }
 
-        /* --- Main Chat Area --- */
+        .status-indicator { 
+          display: flex; 
+          align-items: center; 
+          gap: 8px; 
+          font-size: 0.8rem; 
+          color: var(--text-muted); 
+        }
+
+        .pulse-dot { 
+          width: 8px; 
+          height: 8px; 
+          background: var(--accent); 
+          border-radius: 50%; 
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); 
+          animation: pulse 1.6s infinite; 
+        }
+
         .main-chat { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
+          flex: 1; 
+          display: flex; 
+          flex-direction: column; 
+          background: rgba(17, 24, 39, 0.4); 
         }
 
         .chat-header { 
-            padding: 20px; 
-            border-bottom: 1px solid var(--border-color); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
+          padding: 20px 24px; 
+          border-bottom: 1px solid var(--border-color); 
+          background: rgba(17, 24, 39, 0.6); 
         }
 
-        .header-title { 
-            font-weight: bold; 
-            font-size: 1.2rem; 
-        }
-        
-        .call-btn { 
-            background: #10b981; 
-            color: white; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            display: flex; 
-            gap: 8px; 
-            align-items: center; 
-            transition: background 0.2s; 
+        .header-info h3 { 
+          font-size: 1.1rem; 
+          font-weight: 600; 
         }
 
-        .call-btn:hover { 
-            background: #059669; 
+        .header-info p { 
+          font-size: 0.8rem; 
+          color: var(--text-muted); 
         }
 
-        /* --- Messages --- */
         .chat-box { 
-            flex: 1; 
-            padding: 20px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px; 
-        }
-        
-        .msg-row { 
-            display: flex; 
-            gap: 12px; 
-            max-width: 80%; 
-            align-items: flex-end; 
+          flex: 1; 
+          padding: 24px; 
+          overflow-y: auto; 
+          display: flex; 
+          flex-direction: column; 
+          gap: 16px; 
+          scroll-behavior: smooth; 
         }
 
-        .msg-row.self { 
-            align-self: flex-end; 
-            flex-direction: row-reverse; 
-        }
-        
         .message { 
-            padding: 12px 16px; 
-            border-radius: 12px; 
-            background: var(--msg-other); 
-            color: var(--text-main); 
+          padding: 12px 16px; 
+          border-radius: 12px; 
+          max-width: 70%; 
+          width: fit-content; 
+          background: var(--msg-other); 
+          border: 1px solid rgba(255, 255, 255, 0.03); 
+          color: var(--text-main); 
+          word-break: break-word; 
+          animation: slideUp 0.25s ease-out forwards; 
         }
 
-        .msg-row.self .message { 
-            background: var(--msg-self); 
-            color: var(--msg-text-self); 
+        .message.self { 
+          background: var(--msg-self); 
+          align-self: flex-end; 
+          border-bottom-right-radius: 2px; 
         }
-        
-        .msg-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            gap: 12px; 
-            margin-bottom: 4px; 
+
+        .message:not(.self) { 
+          border-bottom-left-radius: 2px; 
         }
 
         .msg-user { 
-            font-size: 0.75rem; 
-            font-weight: bold; 
-            color: var(--accent); 
+          font-weight: 700; 
+          font-size: 0.75rem; 
+          color: var(--accent); 
+          display: block; 
+          margin-bottom: 4px; 
         }
 
-        .msg-row.self .msg-user { 
-            color: rgba(255,255,255,0.8); 
+        .message.self .msg-user { 
+          color: #a7f3d0; 
         }
 
-        .msg-time { 
-            font-size: 0.65rem; 
-            opacity: 0.7; 
+        .msg-text { 
+          font-size: 0.95rem; 
+          line-height: 1.4; 
         }
 
-        /* --- Input Area --- */
-        .chat-input { 
-            display: flex; 
-            padding: 20px; 
-            border-top: 1px solid var(--border-color); 
-            gap: 10px; 
-            background: var(--bg-main);
+        .chat-input-container { 
+          display: flex; 
+          padding: 20px 24px; 
+          background: #0d1321; 
+          border-top: 1px solid var(--border-color); 
+          gap: 12px; 
         }
 
-        .chat-input input { 
-            flex: 1; 
-            background: var(--panel-bg); 
-            border: 1px solid var(--border-color); 
-            color: var(--text-main); 
-            padding: 14px; 
-            border-radius: 8px; 
-            outline: none; 
-            font-size: 0.95rem;
+        .chat-input-container input { 
+          flex: 1; 
+          background: #1f2937; 
+          border: 1px solid #374151; 
+          color: var(--text-main); 
+          padding: 14px 18px; 
+          border-radius: 8px; 
+          outline: none; 
+          font-size: 0.95rem; 
+          transition: all 0.2s; 
         }
 
-        .chat-input input:focus {
-            border-color: var(--accent);
+        .chat-input-container input:focus { 
+          border-color: var(--accent); 
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
 
-        .chat-input button { 
-            background: var(--accent); 
-            border: none; 
-            color: white; 
-            width: 50px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 1.1rem;
-            transition: background 0.2s;
+        .chat-input-container button { 
+          background: var(--accent); 
+          border: none; 
+          color: white; 
+          width: 48px; 
+          height: 48px; 
+          border-radius: 8px; 
+          cursor: pointer; 
+          display: flex; 
+          justify-content: center; 
+          align-items: center; 
+          font-size: 1.1rem; 
+          transition: background 0.2s, transform 0.1s; 
         }
 
-        .chat-input button:hover {
-            background: var(--accent-hover);
+        .chat-input-container button:hover { 
+          background: var(--accent-hover); 
+        }
+
+        .chat-input-container button:active { 
+          transform: scale(0.95); 
+        }
+
+        .chat-box::-webkit-scrollbar { width: 6px; }
+        .chat-box::-webkit-scrollbar-track { background: transparent; }
+        .chat-box::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+
+        @keyframes pulse { 
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } 
+        }
+
+        @keyframes slideUp { 
+          from { opacity: 0; transform: translateY(12px); } 
+          to { opacity: 1; transform: translateY(0); } 
+        }
+
+        @media(max-width: 768px) { 
+          .chat-wrapper { width: 100vw; height: 100vh; border-radius: 0; border: none; } 
+          .sidebar { display: none; } 
         }
     </style>
 </head>
 <body>
 
-    <!-- Simple Login Modal -->
+    <!-- Authentication Modal -->
     <div id="authModal" class="auth-modal">
         <div class="auth-box">
-            <h2>Join FastChat</h2>
-            <p>Customize your profile to continue</p>
-            <form id="loginForm">
-                <input type="text" id="usernameInput" placeholder="Username" required autocomplete="off" maxlength="20">
-                <input type="url" id="avatarInput" placeholder="Image URL for Profile Pic (Optional)" autocomplete="off">
-                <button type="submit">Enter Chat</button>
+            <h2 id="authTitle">Create Account</h2>
+            <form id="authForm">
+                <div id="registerFields">
+                    <input type="text" id="firstName" placeholder="First Name">
+                    <input type="text" id="lastName" placeholder="Last Name">
+                </div>
+                <!-- Username is used to generate a hidden email for Supabase Auth -->
+                <input type="text" id="authUsername" placeholder="Username" required autocomplete="off">
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" id="authBtn">Sign Up</button>
             </form>
+            <p class="auth-toggle" id="toggleAuth">Already have an account? Log in.</p>
         </div>
     </div>
 
-    <!-- Main Chat App -->
+    <!-- Main Chat Interface (Hidden until logged in) -->
     <div class="chat-wrapper" id="mainApp" style="display: none;">
+        <!-- Sidebar Dashboard Info -->
         <div class="sidebar">
-            <div class="brand"><i class="fa-solid fa-bolt"></i> FastChat</div>
-            
-            <!-- Customization Controls -->
-            <div class="controls-row">
-                <button id="themeToggle" class="icon-btn" title="Toggle Light/Dark Mode"><i class="fa-solid fa-moon"></i></button>
-                <div title="Pick Accent Color">
-                    <input type="color" id="colorPicker" value="#3b82f6">
-                </div>
+            <div class="brand">
+                <i class="fa-solid fa-circle-nodes"></i>
+                <span>SupaChat v2</span>
             </div>
-
+            
+            <!-- Dynamic Channels Navigation -->
             <div class="channels-section">
                 <div class="section-header">
-                    <span>Rooms</span>
-                    <button id="createRoomBtn" class="icon-btn" title="Create a new room"><i class="fa-solid fa-plus"></i></button>
+                    <label class="section-title"><i class="fa-solid fa-comments"></i> Group Chats</label>
+                    <button id="createChatBtn" class="icon-btn" title="Create new chat"><i class="fa-solid fa-plus"></i></button>
                 </div>
-                <div id="channelsList"></div>
+                <div class="channels-list" id="channelsList">
+                    <!-- Dynamic channels injection stream -->
+                </div>
             </div>
 
+            <!-- Current User Card -->
             <div class="user-card">
-                <img id="myAvatar" class="avatar" src="" alt="Avatar">
-                <div class="user-info">
-                    <span id="displayUsername">User</span>
-                    <button id="logoutBtn" class="logout-btn">Change Profile</button>
-                </div>
+                <label><i class="fa-solid fa-user-shield"></i> Current Profile</label>
+                <div id="currentUserDisplay" class="current-user-text">Loading...</div>
+                <button id="logoutBtn" class="logout-btn">Log Out</button>
+            </div>
+            
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span class="status-text">Connected Realtime</span>
             </div>
         </div>
 
+        <!-- Main Chat Window Area -->
         <div class="main-chat">
             <div class="chat-header">
-                <div class="header-title" id="currentRoomName"># Select a room</div>
-                <button id="videoCallBtn" class="call-btn"><i class="fa-solid fa-video"></i> Video / Voice</button>
+                <div class="header-info">
+                    <h3 id="currentChannelName"># Select a chat</h3>
+                    <p>Real-time end-to-end database sync</p>
+                </div>
             </div>
-            
-            <div class="chat-box" id="chatBox"></div>
-            
-            <form class="chat-input" id="messageForm">
-                <input type="text" id="messageInput" placeholder="Type a message..." required autocomplete="off">
-                <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="chat-box" id="chatBox">
+                <!-- Messages dynamic injection stream -->
+            </div>
+            <form class="chat-input-container" id="messageForm">
+                <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off">
+                <button type="submit" id="sendBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
             </form>
         </div>
     </div>
-
+    
     <script>
-        // --- 1. Supabase Setup ---
+        // 1. Core Supabase App API Credentials
         const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0";
-        const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
-        // --- 2. State Variables ---
+        const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
+
+        // 2. DOM Node Element Maps
+        const authModal = document.getElementById('authModal');
+        const mainApp = document.getElementById('mainApp');
+        const authForm = document.getElementById('authForm');
+        const toggleAuthBtn = document.getElementById('toggleAuth');
+        const registerFields = document.getElementById('registerFields');
+        const authTitle = document.getElementById('authTitle');
+        const authBtn = document.getElementById('authBtn');
+        const currentUserDisplay = document.getElementById('currentUserDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const createChatBtn = document.getElementById('createChatBtn');
+        const chatBox = document.getElementById('chatBox');
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const channelsList = document.getElementById('channelsList');
+        const currentChannelName = document.getElementById('currentChannelName');
+
+        // 3. Application State
+        let isLoginMode = false;
         let currentUser = null;
-        let currentAvatar = null;
         let activeRoomId = null;
 
-        // --- 3. UI Customization Logic ---
-        document.getElementById('colorPicker').addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--accent', e.target.value);
-            localStorage.setItem('chat_color', e.target.value);
-        });
+        // --- AUTHENTICATION LOGIC ---
 
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            document.querySelector('#themeToggle i').className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-            localStorage.setItem('chat_theme', isLight ? 'light' : 'dark');
-        });
-
-        // Load saved preferences on startup
-        if (localStorage.getItem('chat_color')) {
-            document.documentElement.style.setProperty('--accent', localStorage.getItem('chat_color'));
-            document.getElementById('colorPicker').value = localStorage.getItem('chat_color');
-        }
-        if (localStorage.getItem('chat_theme') === 'light') {
-            document.body.classList.add('light-mode');
-            document.querySelector('#themeToggle i').className = 'fa-solid fa-sun';
-        }
-
-        // --- 4. Login / Profile Logic ---
-        function checkLogin() {
-            const savedUser = localStorage.getItem('chat_username');
-            const savedAvatar = localStorage.getItem('chat_avatar');
-            
-            if (savedUser) {
-                currentUser = savedUser;
-                // Use custom URL if provided, otherwise generate a default one
-                currentAvatar = savedAvatar || `https://ui-avatars.com/api/?name=${currentUser}&background=random`;
-                
-                document.getElementById('displayUsername').textContent = currentUser;
-                document.getElementById('myAvatar').src = currentAvatar;
-                
-                document.getElementById('authModal').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                fetchRooms();
+        // Toggle UI between Login and Register modes
+        toggleAuthBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                authTitle.textContent = "Log In";
+                authBtn.textContent = "Log In";
+                registerFields.style.display = "none";
+                toggleAuthBtn.textContent = "Need an account? Sign up.";
             } else {
-                document.getElementById('authModal').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
+                authTitle.textContent = "Create Account";
+                authBtn.textContent = "Sign Up";
+                registerFields.style.display = "block";
+                toggleAuthBtn.textContent = "Already have an account? Log in.";
+            }
+        });
+
+        // Handle Form Submission (Login / Register)
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Convert username to a dummy email behind the scenes for Supabase
+            // NOTE: Ensure "Confirm email" is disabled in Supabase Auth settings!
+            const dummyEmail = `${username}@supachat.local`.toLowerCase();
+
+            if (isLoginMode) {
+                // Log in
+                const { data, error } = await supabase2.auth.signInWithPassword({ 
+                    email: dummyEmail, 
+                    password 
+                });
+                
+                if (error) alert("Login failed: " + error.message);
+                else checkSession();
+            } else {
+                // Sign up
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+
+                if (!firstName || !lastName) {
+                    alert("First and Last name are required to sign up.");
+                    return;
+                }
+
+                const { data, error } = await supabase2.auth.signUp({
+                    email: dummyEmail,
+                    password,
+                    options: {
+                        data: { 
+                            first_name: firstName, 
+                            last_name: lastName, 
+                            username: username 
+                        }
+                    }
+                });
+                
+                if (error) alert("Signup error: " + error.message);
+                else {
+                    alert("Account created successfully! You are now logging in.");
+                    checkSession();
+                }
+            }
+        });
+
+        // Check if user is logged in, and route the UI accordingly
+        async function checkSession() {
+            const { data: { session } } = await supabase2.auth.getSession();
+            
+            if (session) {
+                currentUser = session.user;
+                authModal.style.display = "none";
+                mainApp.style.display = "flex";
+                
+                // Display username from metadata, fallback to email if missing
+                currentUserDisplay.textContent = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+                
+                fetchRooms(); // Start loading app data
+            } else {
+                authModal.style.display = "flex";
+                mainApp.style.display = "none";
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('usernameInput').value.trim();
-            const customAvatarUrl = document.getElementById('avatarInput').value.trim();
-            
-            if (name) {
-                localStorage.setItem('chat_username', name);
-                if (customAvatarUrl) {
-                    localStorage.setItem('chat_avatar', customAvatarUrl);
-                } else {
-                    localStorage.removeItem('chat_avatar'); 
-                }
-                checkLogin();
-            }
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.removeItem('chat_username');
-            localStorage.removeItem('chat_avatar');
-            document.getElementById('chatBox').innerHTML = '';
+        // Log out user
+        logoutBtn.addEventListener('click', async () => {
+            await supabase2.auth.signOut();
+            currentUser = null;
             activeRoomId = null;
-            checkLogin();
+            chatBox.innerHTML = '';
+            checkSession();
         });
 
-        // --- 5. Chat Rooms Logic ---
-        async function fetchRooms() {
-            const { data: rooms } = await supabase.from('rooms').select('*').order('name');
-            const list = document.getElementById('channelsList');
-            list.innerHTML = '';
+        // --- CHAT APPLICATION LOGIC ---
+
+        // Create New Chat Room
+        createChatBtn.addEventListener('click', async () => {
+            const roomName = prompt("Enter new chat room name:");
+            if (!roomName) return;
+
+            const { error } = await supabase2
+                .from('rooms')
+                .insert([{ name: roomName }]);
             
-            if (rooms) {
+            if (error) alert("Error creating room: " + error.message);
+            else fetchRooms(); // Refresh the list of rooms
+        });
+
+        // Fetch and Render Chat Rooms
+        async function fetchRooms() {
+            const { data: rooms, error } = await supabase2
+                .from('rooms')
+                .select('*')
+                .order('name', { ascending: true });
+
+            if (error) {
+                console.error('Error loading chat groups:', error);
+                return;
+            }
+
+            channelsList.innerHTML = ''; 
+            
+            if (rooms && rooms.length > 0) {
                 rooms.forEach((room, index) => {
-                    const el = document.createElement('div');
-                    el.className = 'channel-item';
-                    el.innerHTML = `<i class="fa-solid fa-hashtag"></i> ${room.name}`;
+                    const roomEl = document.createElement('div');
+                    roomEl.classList.add('channel-item');
+                    roomEl.setAttribute('data-id', room.id);
+                    roomEl.innerHTML = `<i class="fa-solid fa-hashtag"></i> ${room.name}`;
                     
-                    el.onclick = () => {
-                        document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
-                        el.classList.add('active');
+                    roomEl.addEventListener('click', () => switchRoom(room.id, room.name));
+                    channelsList.appendChild(roomEl);
+
+                    // Automatically select the first room if none is selected
+                    if (index === 0 && !activeRoomId) {
                         switchRoom(room.id, room.name);
-                    };
-                    
-                    list.appendChild(el);
-                    
-                    // Auto-select first room
-                    if (index === 0 && !activeRoomId) el.click();
+                    }
                 });
             }
         }
 
-        document.getElementById('createRoomBtn').addEventListener('click', async () => {
-            const name = prompt("New room name:");
-            if (name) {
-                await supabase.from('rooms').insert([{ name }]);
-                fetchRooms();
-            }
-        });
-
-        async function switchRoom(id, name) {
-            activeRoomId = id;
-            document.getElementById('currentRoomName').textContent = `# ${name}`;
-            const box = document.getElementById('chatBox');
-            box.innerHTML = '';
+        // Switch Active Chat Room
+        async function switchRoom(roomId, roomName) {
+            if (activeRoomId === roomId) return;
+            activeRoomId = roomId;
             
-            const { data } = await supabase.from('messages').select('*').eq('room_id', id).order('created_at');
-            if (data) data.forEach(msg => appendMessage(msg));
+            currentChannelName.textContent = `# ${roomName}`;
+            
+            document.querySelectorAll('.channel-item').forEach(el => {
+                if (el.getAttribute('data-id') === roomId) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            chatBox.innerHTML = '';
+            await fetchMessages();
         }
 
-        // --- 6. Messaging Logic ---
+        // Fetch Messages for the Active Room
+        async function fetchMessages() {
+            if (!activeRoomId) return;
+
+            const { data, error } = await supabase2
+                .from('messages')
+                .select('*')
+                .eq('room_id', activeRoomId)
+                .order('created_at', { ascending: true });
+
+            if (error) console.error('Error loading history:', error);
+            else data.forEach(msg => appendMessage(msg));
+        }
+
+        // Append a Message to the DOM
         function appendMessage(msg) {
-            const isSelf = msg.username === currentUser;
+            if (!currentUser) return;
+
+            // Check if message belongs to logged-in user
+            const isSelf = msg.username === currentUser.user_metadata?.username; 
             
-            // Format timestamp nicely
-            const timeStr = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            // Fallback to generated avatar if they didn't supply a custom one in the database
-            const avatarToUse = msg.avatar_url || `https://ui-avatars.com/api/?name=${msg.username}&background=random`;
-            
-            const div = document.createElement('div');
-            div.className = `msg-row ${isSelf ? 'self' : ''}`;
-            
-            div.innerHTML = `
-                <img class="avatar" src="${avatarToUse}" style="width: 36px; height: 36px;">
-                <div class="message">
-                    <div class="msg-header">
-                        <span class="msg-user">${msg.username}</span>
-                        <span class="msg-time">${timeStr}</span>
-                    </div>
-                    <div>${msg.content}</div>
-                </div>
+            const msgElement = document.createElement('div');
+            msgElement.classList.add('message');
+            if (isSelf) msgElement.classList.add('self');
+
+            msgElement.innerHTML = `
+                <span class="msg-user">${isSelf ? 'You' : (msg.username || 'Anonymous')}</span>
+                <span class="msg-text">${msg.content}</span>
             `;
-            
-            const box = document.getElementById('chatBox');
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight; // Auto-scroll to bottom
+            chatBox.appendChild(msgElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+        // Send a Message
+        messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
-            
-            if (content && activeRoomId) {
-                await supabase.from('messages').insert([{
-                    username: currentUser, 
+            const content = messageInput.value.trim();
+
+            if (!content || !activeRoomId || !currentUser) return;
+
+            const username = currentUser.user_metadata?.username || 'Anonymous';
+
+            const { error } = await supabase2
+                .from('messages')
+                .insert([{ 
+                    username: username, 
                     content: content, 
-                    room_id: activeRoomId,
-                    avatar_url: currentAvatar // Sends custom picture URL to database
+                    room_id: activeRoomId 
                 }]);
-                input.value = '';
-            }
+
+            if (error) console.error('Error sending message:', error);
+            else messageInput.value = '';
         });
 
-        // --- 7. Realtime Subscription ---
-        supabase.channel('public:messages')
+        // Realtime Subscription Listener
+        supabase2
+            .channel('public:messages')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                if (payload.new.room_id === activeRoomId) appendMessage(payload.new);
-            }).subscribe();
+                if (payload.new.room_id === activeRoomId) {
+                    appendMessage(payload.new);
+                }
+            })
+            .subscribe();
 
-        // --- 8. Video / Voice Call Logic (Jitsi Integration) ---
-        document.getElementById('videoCallBtn').addEventListener('click', () => {
-            if (!activeRoomId) {
-                alert("Select a chat room first.");
-                return;
-            }
-            // Create a clean string out of the room name for the Jitsi URL
-            const roomString = document.getElementById('currentRoomName').textContent.replace('# ', '').replace(/[^a-zA-Z0-9]/g, '_');
-            const uniqueMeetingId = `FastChat_${roomString}_${activeRoomId}`;
-            
-            // Open video call in a new tab
-            window.open(`https://meet.jit.si/${uniqueMeetingId}`, '_blank');
-        });
-
-        // --- Boot App ---
-        checkLogin();
+        // Boot Application
+        checkSession();
     </script>
 </body>
 </html>
