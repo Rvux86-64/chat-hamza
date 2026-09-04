@@ -794,14 +794,24 @@
         if (error) alert("Failed to delete message: " + error.message);
     }
 
-    messageForm.addEventListener('submit', async (e) => {
+  messageForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const content = messageInput.value.trim();
 
         if (!content || !activeRoomId || !currentUser) return;
 
+        // Force a session refresh to get the latest username (in case a supermod just renamed you)
+        const { data: { user }, error: userErr } = await supabase2.auth.getUser();
+        if (userErr || !user) return console.error("Could not verify session");
+        
+        currentUser = user; // Update the local user cache
         const myUsername = currentUser.user_metadata?.username;
+        
+        // Update the UI in case it just changed
+        currentUserName.textContent = myUsername;
+        currentUserAvatar.src = getAvatarUrl(myUsername, getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
 
+        // Check permissions
         const { data: roleData } = await supabase2
             .from('user_roles')
             .select('role')
