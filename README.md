@@ -2,5 +2,5 @@ H-chat: A chat website coded in html. It has group chats, customization, and oth
 Special thanks to:
 Asher Goodman
 Hakan Ergur 
-Lukas Leuung
-Ramsey Kitterman
+Lukas Leung
+Ramsey Kitterams Trezsamsky
