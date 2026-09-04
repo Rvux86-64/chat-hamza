@@ -262,6 +262,25 @@
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-track { background: transparent; }
         .chat-box::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        .msg-attachment-img {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: block;
+            border: 1px solid var(--border-color);
+        }
+        .msg-attachment-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        .msg-attachment-link:hover {
+            text-decoration: underline;
+        }
 
         @keyframes pulse { 
           0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 
@@ -369,12 +388,16 @@
 
             <div class="chat-box" id="chatBox" style="display: none;"></div>
 
-            <form class="chat-input-container" id="messageForm" style="display: none;">
-                <input type="text" id="messageInput" placeholder="Write something meaningful..." required autocomplete="off" autocorrect="off" autocapitalize="off">
-                <button type="submit" id="sendBtn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </form>
+          <form class="chat-input-container" id="messageForm" style="display: none;">
+    <input type="file" id="fileInput" style="display: none;" accept="image/*, .pdf, .doc, .txt, .zip">
+    <button type="button" id="attachBtn" title="Attach File" style="background: #1f2937; margin-right: 8px;">
+        <i class="fa-solid fa-paperclip"></i>
+    </button>
+    <input type="text" id="messageInput" placeholder="Write something meaningful..." autocomplete="off">
+    <button type="submit" id="sendBtn">
+        <i class="fa-solid fa-paper-plane"></i>
+    </button>
+</form>
         </div>
     </div>
 
@@ -920,6 +943,8 @@ checkSession();
 </script>-->
       <script>
         // 1. Core Supabase App API Credentials
+    const attachBtn = document.getElementById('attachBtn');
+    const fileInput = document.getElementById('fileInput');
     const SB_URL = "https://jziqxqpvgeiwbthdxbze.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6aXF4cXB2Z2Vpd2J0aGR4YnplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NjMwMTEsImV4cCI6MjEwMzMzOTAxMX0.opW1zH8ivEFbPTkn5r1EaINzvfH8fUflU8TPL9QVaw0"
     const supabase2 = window.supabase.createClient(SB_URL, SB_KEY);
@@ -1263,17 +1288,38 @@ function showNotification(username, message) {
             </div>
         ` : '';
 
-        rowElement.innerHTML = `
-            <img src="${avatarImg}" alt="${msgUsername}" class="chat-avatar">
-            <div class="message">
-                ${actionsHtml}
-                <div class="msg-header">
-                    <span class="msg-user">${isSelf ? 'You' : msgUsername}</span>
-                    <span class="msg-time">${timeString}</span>
-                </div>
-                <span class="msg-text" id="msg-text-${msg.id}">${msg.content}</span>
-            </div>
-        `;
+       let formattedContent = msg.content;
+
+if (typeof formattedContent === 'string') {
+    if (formattedContent.startsWith('[IMG]') && formattedContent.endsWith('[/IMG]')) {
+        const url = formattedContent.replace('[IMG]', '').replace('[/IMG]', '');
+        formattedContent = `<img src="${url}" class="msg-attachment-img" alt="Uploaded Image">`;
+    } else if (formattedContent.startsWith('[FILE=') && formattedContent.endsWith('[/FILE]')) {
+        const match = formattedContent.match(/\[FILE=(.*?)\](.*?)\[\/FILE\]/);
+        if (match) {
+            const fileName = match[1];
+            const url = match[2];
+            formattedContent = `<a href="${url}" target="_blank" class="msg-attachment-link"><i class="fa-solid fa-file-arrow-down"></i> Download: ${fileName}</a>`;
+        }
+    } else {
+        // Prevent XSS in normal text
+        const tempDiv = document.createElement('div');
+        tempDiv.textContent = formattedContent;
+        formattedContent = tempDiv.innerHTML;
+    }
+}
+
+rowElement.innerHTML = `
+    <img src="${avatarImg}" alt="${msgUsername}" class="chat-avatar">
+    <div class="message">
+        ${actionsHtml}
+        <div class="msg-header">
+            <span class="msg-user">${isSelf ? 'You' : msgUsername}</span>
+            <span class="msg-time">${timeString}</span>
+        </div>
+        <span class="msg-text" id="msg-text-${msg.id}">${formattedContent}</span>
+    </div>
+`;
         
         chatBox.appendChild(rowElement);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -1407,7 +1453,46 @@ async function handleCommand(inputString) {
             alert(`Unknown command: /${command}`);
     }
 }
+attachBtn.addEventListener('click', () => {
+    if (!activeRoomId) return alert("Select a chat first.");
+    fileInput.click();
+});
 
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeRoomId || !currentUser) return;
+
+    attachBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    attachBtn.disabled = true;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${activeRoomId}/${fileName}`;
+
+    const { error: uploadError } = await supabase2.storage
+        .from('chat-files')
+        .upload(filePath, file);
+
+    if (uploadError) {
+        alert("Upload failed: " + uploadError.message);
+    } else {
+        const { data } = supabase2.storage.from('chat-files').getPublicUrl(filePath);
+        const fileUrl = data.publicUrl;
+        
+        const isImage = file.type.startsWith('image/');
+        const messageContent = isImage ? `[IMG]${fileUrl}[/IMG]` : `[FILE=${file.name}]${fileUrl}[/FILE]`;
+
+        await supabase2.from('messages').insert([{ 
+            room_id: activeRoomId, 
+            content: messageContent,
+            username: currentUser.user_metadata?.username
+        }]);
+    }
+
+    attachBtn.innerHTML = '<i class="fa-solid fa-paperclip"></i>';
+    attachBtn.disabled = false;
+    fileInput.value = ''; 
+});
 // Check if input is a slash command
 if (content.startsWith('/')) {
     messageInput.value = '';
